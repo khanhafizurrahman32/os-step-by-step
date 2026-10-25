@@ -38,7 +38,7 @@ Tick the boxes as you go — on GitHub you can fork the repo and edit this page 
 | 18 | ☐ [L24 FFS](../persistence/l24-ffs.md) + [L25 Journaling](../persistence/l25-journaling.md) | R1: L22–23 · R2: L19–20 · R3: L13–14 |
 | 19 | ☐ [L26 LFS & integrity](../persistence/l26-lfs-integrity.md) + [L27 NFS/AFS](../distribution/l27-dfs.md) | R1: L24–25 · R2: L21 · R3: L15–18 |
 | 20 | **Full mixed drill** + [cheat sheet](../review/cheat-sheet.md) from memory | R2: L22–25 |
-| 21 | **Final**: blurt all 4 chains, then fix gaps | R3: L19–27 |
+| 21 | **Final**: blurt all 5 chains, then fix gaps | R3: L19–27 |
 
 Then keep doing R4 (Day +21) reviews with Anki — 10 minutes a day keeps it all.
 
