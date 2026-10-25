@@ -1,0 +1,96 @@
+site_name: OS Step by Step
+site_description: Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.
+# site_url: https://<your-username>.github.io/os-step-by-step/
+# repo_url: https://github.com/<your-username>/os-step-by-step
+# edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle: {icon: material/weather-night, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle: {icon: material/weather-sunny, name: Light mode}
+  icon:
+    logo: material/chip
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc: {permalink: true}
+  - pymdownx.details
+  - pymdownx.tasklist: {custom_checkbox: true}
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Start here:
+      - start/index.md
+      - The 80/20 map: start/80-20-map.md
+      - The recall system: start/recall-system.md
+      - 3-week plan: start/study-plan.md
+  - Virtualization:
+      - virtualization/index.md
+      - L01 · Intro & the 3 pieces: virtualization/l01-intro.md
+      - L02 · Processes & fork/exec/wait: virtualization/l02-process.md
+      - L03 · Limited direct execution: virtualization/l03-lde.md
+      - L04 · Scheduling basics: virtualization/l04-scheduling.md
+      - L05 · MLFQ, lottery, multi-CPU: virtualization/l05-mlfq.md
+      - L06 · Address spaces & malloc: virtualization/l06-address-space.md
+      - L07 · Base/bounds & segmentation: virtualization/l07-segmentation.md
+      - L08 · Free-space management: virtualization/l08-free-space.md
+      - L09 · Paging: virtualization/l09-paging.md
+      - L10 · TLBs: virtualization/l10-tlb.md
+      - L11 · Smaller page tables: virtualization/l11-smaller-tables.md
+      - L12 · Swapping & replacement: virtualization/l12-swapping.md
+  - Concurrency:
+      - concurrency/index.md
+      - L13 · Threads & races: concurrency/l13-threads.md
+      - L14 · Locks: concurrency/l14-locks.md
+      - L15 · Concurrent data structures: concurrency/l15-concurrent-ds.md
+      - L16 · Condition variables: concurrency/l16-condvars.md
+      - L17 · Semaphores: concurrency/l17-semaphores.md
+      - L18 · Bugs, deadlock & events: concurrency/l18-deadlock.md
+  - Persistence:
+      - persistence/index.md
+      - L19 · I/O devices: persistence/l19-io.md
+      - L20 · Hard disks & SSDs: persistence/l20-disks.md
+      - L21 · RAID: persistence/l21-raid.md
+      - L22 · Files & directories: persistence/l22-files-api.md
+      - L23 · File system implementation: persistence/l23-vsfs.md
+      - L24 · FFS & locality: persistence/l24-ffs.md
+      - L25 · Crash consistency: persistence/l25-journaling.md
+      - L26 · LFS & data integrity: persistence/l26-lfs-integrity.md
+  - Distribution:
+      - distribution/index.md
+      - L27 · Distributed systems, NFS, AFS: distribution/l27-dfs.md
+  - Review:
+      - review/index.md
+      - One-page cheat sheet: review/cheat-sheet.md
+      - The big chain map: review/chain-map.md
+      - Mixed recall drills: review/drills.md
+      - Flashcards (Anki): review/flashcards.md

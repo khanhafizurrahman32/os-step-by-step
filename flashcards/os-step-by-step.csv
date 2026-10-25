@@ -1,0 +1,175 @@
+question,answer,lesson,part
+"What are the ""three easy pieces""?","Virtualization, concurrency, persistence.",L01 · Intro & the three pieces,virtualization
+Why can two processes print the same address for a variable yet hold different values?,Each has its own virtual address space; the same virtual address maps to different physical memory.,L01 · Intro & the three pieces,virtualization
+Why does a shared counter incremented by two threads end up wrong?,"`counter++` is load–add–store. If a context switch hits between them, one thread's update overwrites the other's. The three instructions are not atomic.",L01 · Intro & the three pieces,virtualization
+How does a system call differ from a procedure call?,"It traps into the kernel and raises the hardware privilege level, so the OS can perform restricted operations; a procedure call stays in user mode.",L01 · Intro & the three pieces,virtualization
+What does fork() return in the parent and in the child?,Child's PID in the parent; 0 in the child; −1 on failure.,L02 · Processes & fork / exec / wait,virtualization
+When does exec() return?,Only if it fails. On success the calling program is replaced and the old code is gone.,L02 · Processes & fork / exec / wait,virtualization
+Why does UNIX split process creation into fork() and exec()?,"So code can run in the child between the two, to set up redirection, pipes or other environment changes before the new program starts.",L02 · Processes & fork / exec / wait,virtualization
+What are the three main process states and their transitions?,"Running, Ready, Blocked. Running→Ready (descheduled), Ready→Running (scheduled), Running→Blocked (I/O starts), Blocked→Ready (I/O done).",L02 · Processes & fork / exec / wait,virtualization
+What is a zombie process?,One that has exited but whose parent hasn't called wait() to collect its exit status.,L02 · Processes & fork / exec / wait,virtualization
+What does the OS store in a process control block (PCB)?,"Saved registers (context), state, PID, parent, memory info, open files, and similar per-process data.",L02 · Processes & fork / exec / wait,virtualization
+"What does ""limited direct execution"" mean?","Run the program directly on the CPU for speed, but limit it: user mode, traps for privileged operations, and a timer interrupt so the OS regains control.",L03 · Limited direct execution,virtualization
+What is the trap table and when is it set up?,A table of handler addresses for traps/interrupts. The kernel installs it at boot using a privileged instruction.,L03 · Limited direct execution,virtualization
+Why does the cooperative approach fail?,"A process stuck in an infinite loop never makes a syscall, so the OS never runs again; you must reboot.",L03 · Limited direct execution,virtualization
+How does the OS regain control in the non-cooperative approach?,A hardware timer interrupt every few milliseconds jumps into the OS's interrupt handler.,L03 · Limited direct execution,virtualization
+"In a context switch, which registers does the hardware save and which does the OS save?",Hardware saves the user registers onto the process's kernel stack on the interrupt. The OS saves the kernel registers into the process's PCB in switch().,L03 · Limited direct execution,virtualization
+Why pass a system-call number instead of an address?,So user code can only reach approved kernel entry points; it can't jump into the middle of the kernel.,L03 · Limited direct execution,virtualization
+Define turnaround time and response time.,Turnaround = completion − arrival. Response = first run − arrival.,"L04 · Scheduling basics: FIFO, SJF, STCF, RR",virtualization
+What is the convoy effect?,"Short jobs stuck waiting behind a long job in FIFO, inflating average turnaround.","L04 · Scheduling basics: FIFO, SJF, STCF, RR",virtualization
+What's the difference between SJF and STCF?,SJF is non-preemptive: it picks the shortest job when choosing. STCF preempts the running job whenever a new job has less remaining time.,"L04 · Scheduling basics: FIFO, SJF, STCF, RR",virtualization
+Why does RR have poor turnaround?,"It stretches every job out across many slices, so all jobs finish near the end.","L04 · Scheduling basics: FIFO, SJF, STCF, RR",virtualization
+What's the trade-off in choosing RR's time slice?,Shorter = better response but more context-switch overhead; longer amortizes the switch cost but hurts response.,"L04 · Scheduling basics: FIFO, SJF, STCF, RR",virtualization
+How does the scheduler use I/O to improve utilisation?,"When a job blocks on I/O, run another job; treat each CPU burst as a separate job so interactive bursts run quickly and overlap with I/O.","L04 · Scheduling basics: FIFO, SJF, STCF, RR",virtualization
+What is MLFQ's key idea?,"Use several priority queues and adjust a job's priority based on its observed behaviour, so it approximates SJF without knowing job lengths.","L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+"Which MLFQ rule prevents starvation, and what else does it fix?",Rule 5 (periodic priority boost). It also lets a job that became interactive get back to high priority.,"L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+"How could a program game the original MLFQ, and what fixes it?",Issue an I/O just before its slice ends to stay at high priority. Fixed by accounting for total time used at a level (new Rule 4).,"L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+Why do higher MLFQ queues get shorter time slices?,They hold interactive jobs that need fast switching; lower queues hold CPU-bound jobs that benefit from long slices with less switching.,"L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+Lottery vs stride scheduling?,"Lottery picks a random ticket each slice — simple, no global state, fair on average. Stride is deterministic (run lowest pass, add stride) — exactly fair but needs global state.","L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+How does Linux CFS pick the next process?,"The one with the lowest virtual runtime, stored in a red-black tree; nice values weight how fast vruntime grows.","L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+Single-queue vs multi-queue multiprocessor scheduling?,"Single-queue: simple, balanced, but lock contention and poor cache affinity. Multi-queue: scalable and affinity-friendly, but needs migration/work stealing to fix load imbalance.","L05 · MLFQ, lottery & multiprocessor scheduling",virtualization
+What are the three segments of a typical address space and how do they grow?,"Code (fixed), heap (grows towards higher addresses), stack (grows towards lower addresses).",L06 · Address spaces & the memory API,virtualization
+What are the three goals of virtual memory?,"Transparency, efficiency (time and space), protection/isolation.",L06 · Address spaces & the memory API,virtualization
+Is malloc() a system call?,No. It's a library routine; it gets memory from the OS with brk/sbrk or mmap.,L06 · Address spaces & the memory API,virtualization
+Why must you allocate strlen(s)+1 bytes to copy a string?,To leave room for the terminating null byte.,L06 · Address spaces & the memory API,virtualization
+What is a dangling pointer?,A pointer to memory that has already been freed; using it is undefined behaviour.,L06 · Address spaces & the memory API,virtualization
+How does base-and-bounds translation work?,"Physical = virtual + base; if virtual ≥ bounds, the hardware raises an exception.",L07 · Address translation: base/bounds & segmentation,virtualization
+"Where do base and bounds live, and who can change them?",In the CPU's MMU; only privileged (kernel-mode) instructions can change them. The OS saves/restores them in the PCB on a context switch.,L07 · Address translation: base/bounds & segmentation,virtualization
+What problem does segmentation solve over base-and-bounds?,"It avoids wasting physical memory for the unused space between heap and stack, by relocating each segment separately.",L07 · Address translation: base/bounds & segmentation,virtualization
+How does the hardware know which segment a virtual address is in?,Typically the top bits of the virtual address select the segment; the rest is the offset.,L07 · Address translation: base/bounds & segmentation,virtualization
+What is external fragmentation and why does segmentation cause it?,"Free memory split into many small variable-sized holes. Segments have different sizes, so allocating and freeing them leaves gaps too small to use.",L07 · Address translation: base/bounds & segmentation,virtualization
+How are code segments shared between processes?,With protection bits: a read-execute-only code segment can be mapped into many address spaces safely.,L07 · Address translation: base/bounds & segmentation,virtualization
+How does free() know the size of the block?,"It reads a header stored just before the returned pointer, which holds the size (and a magic number for integrity).",L08 · Free-space management,virtualization
+What is coalescing?,Merging a freed chunk with adjacent free chunks into a single larger free chunk.,L08 · Free-space management,virtualization
+Best fit vs first fit?,"Best fit searches the whole list for the smallest hole that fits (less waste, slow, slivers). First fit takes the first hole that fits (fast, slivers at the list head).",L08 · Free-space management,virtualization
+How does the buddy allocator make coalescing easy?,"Blocks are powers of two; a block's buddy address differs by a single bit, so checking and merging is quick and recursive.",L08 · Free-space management,virtualization
+What's the main downside of the buddy allocator?,"Internal fragmentation, because requests are rounded up to a power of two.",L08 · Free-space management,virtualization
+What is a page vs a page frame?,A page is a fixed-size chunk of virtual memory; a page frame is the same-size slot in physical memory.,L09 · Paging,virtualization
+How is a virtual address split under paging?,High bits = virtual page number (VPN); low log2(page size) bits = offset.,L09 · Paging,virtualization
+Which part of the address does the page table translate?,Only the VPN → PFN. The offset is copied unchanged.,L09 · Paging,virtualization
+How large is a linear page table for a 32-bit space with 4 KB pages and 4-byte PTEs?,2^20 entries × 4 bytes = 4 MB per process.,L09 · Paging,virtualization
+Why is basic paging slow?,Each memory reference needs an extra memory access to fetch the PTE first.,L09 · Paging,virtualization
+Valid bit vs present bit?,Valid: the page belongs to the address space. Present: the page is currently in physical memory (not swapped out).,L09 · Paging,virtualization
+Two advantages of paging over segmentation?,"No external fragmentation (all frames same size), and flexible support for sparse address spaces.",L09 · Paging,virtualization
+What does the TLB store?,Recently used virtual-to-physical page translations (VPN → PFN plus protection and other bits).,L10 · TLBs: making paging fast,virtualization
+Why does the TLB work well for most programs?,Spatial and temporal locality: nearby accesses fall in the same page and pages get reused.,L10 · TLBs: making paging fast,virtualization
+Hardware-managed vs software-managed TLB miss?,"Hardware: the CPU walks the page table itself (x86). Software: the CPU traps to the OS, which walks the table and installs the entry (MIPS) — more flexible.",L10 · TLBs: making paging fast,virtualization
+What's special about returning from a TLB-miss trap?,"It must retry the instruction that caused the miss, unlike a syscall return which continues with the next instruction.",L10 · TLBs: making paging fast,virtualization
+How do ASIDs help with context switches?,"Entries are tagged with the address-space ID, so the TLB can hold translations for several processes without flushing.",L10 · TLBs: making paging fast,virtualization
+What is TLB coverage?,Number of entries × page size — the amount of memory reachable without a TLB miss.,L10 · TLBs: making paging fast,virtualization
+Why are linear page tables wasteful?,"They allocate a PTE for every virtual page, even the vast unused region between heap and stack.",L11 · Smaller page tables: multi-level & friends,virtualization
+How does a multi-level page table save space?,"The page table is split into page-sized chunks; a page directory tracks them, and chunks with no valid entries are never allocated.",L11 · Smaller page tables: multi-level & friends,virtualization
+What's the cost of a two-level page table?,"On a TLB miss, two memory accesses instead of one to translate (plus more complexity).",L11 · Smaller page tables: multi-level & friends,virtualization
+"How many 4-byte PTEs fit in a 4 KB page, and what does that imply?",1024 → each level indexes with 10 bits.,L11 · Smaller page tables: multi-level & friends,virtualization
+What's an inverted page table?,"A single system-wide table with one entry per physical frame, recording which process and virtual page use it; searched with a hash table.",L11 · Smaller page tables: multi-level & friends,virtualization
+Why not just use bigger pages?,Internal fragmentation: most of each big page goes unused for small allocations.,L11 · Smaller page tables: multi-level & friends,virtualization
+What is the present bit?,A PTE bit saying whether the page is in physical memory (1) or swapped out to disk (0).,L12 · Swapping: going beyond physical memory,virtualization
+What happens on a page fault?,"The OS finds a free frame (evicting one if needed), reads the page from swap, sets present=1 and the PFN, and the faulting instruction is retried. The process is blocked during the I/O.",L12 · Swapping: going beyond physical memory,virtualization
+Write the average memory access time formula.,AMAT = T_M + P_miss × T_D.,L12 · Swapping: going beyond physical memory,virtualization
+What does OPT evict and why can't we use it?,The page that will be used furthest in the future; it requires knowing the future.,L12 · Swapping: going beyond physical memory,virtualization
+What is Belady's anomaly?,"With FIFO, increasing cache size can increase the number of misses. LRU and OPT (stack algorithms) don't have it.",L12 · Swapping: going beyond physical memory,virtualization
+How does the Clock algorithm work?,Pages in a circle with a hardware-set use bit. The hand sweeps: use bit 1 → clear it and move on; use bit 0 → evict.,L12 · Swapping: going beyond physical memory,virtualization
+Which workload makes LRU and FIFO miss every time?,Looping sequentially over one more page than the cache holds.,L12 · Swapping: going beyond physical memory,virtualization
+What is thrashing and how is it handled?,Memory is oversubscribed so the system spends its time paging. Run fewer processes (admission control) or kill one (OOM killer).,L12 · Swapping: going beyond physical memory,virtualization
+What is copy-on-write?,"After fork, parent and child share pages read-only; a page is copied only when one of them writes to it.",L12 · Swapping: going beyond physical memory,virtualization
+"What do threads in a process share, and what is private to each?","Shared: code, heap, globals, open files (the address space). Private: registers, program counter, stack.",L13 · Threads & race conditions,concurrency
+Why might counter++ give the wrong result with two threads?,"It's load, add, store; an interrupt between them lets the other thread read the old value, and one update is lost.",L13 · Threads & race conditions,concurrency
+"Define critical section, race condition and mutual exclusion.",Critical section: code touching shared data. Race condition: result depends on timing. Mutual exclusion: only one thread in the critical section at a time.,L13 · Threads & race conditions,concurrency
+Two reasons to use threads?,"Parallelism on multiple CPUs, and avoiding blocking the program on slow I/O.",L13 · Threads & race conditions,concurrency
+Why is returning a pointer to a local variable from a thread a bug?,"The local lives on the thread's stack, which is freed when the thread exits.",L13 · Threads & race conditions,concurrency
+Three criteria for evaluating a lock?,"Correctness (mutual exclusion), fairness (no starvation), performance (overhead uncontended, one CPU, many CPUs).",L14 · Locks,concurrency
+Why doesn't disabling interrupts work as a general lock?,"It's privileged (programs could abuse it), doesn't work on multiprocessors, can lose interrupts, and is slow on modern CPUs. OK only inside the kernel briefly.",L14 · Locks,concurrency
+Why does a simple flag-based lock fail?,Testing the flag and setting it are separate steps; an interrupt in between lets two threads both see it free and both enter.,L14 · Locks,concurrency
+What does test-and-set do?,Atomically returns the old value at an address and sets it to a new value.,L14 · Locks,concurrency
+How does a ticket lock guarantee fairness?,"Fetch-and-add hands out increasing tickets; the lock serves turns in order, so each thread gets in once its number comes up.",L14 · Locks,concurrency
+Why are spin locks bad on a single CPU?,"A waiting thread spins for its whole time slice, but the holder can't run to release the lock during that time.",L14 · Locks,concurrency
+What is the wakeup/waiting race and how is it fixed?,"A thread about to park() gets unparked before it sleeps, then sleeps forever. Solaris fixes it with setpark(); futexes check the value atomically in the kernel.",L14 · Locks,concurrency
+What is a two-phase lock?,"Spin for a short time hoping the lock frees up soon; if not, sleep until woken.",L14 · Locks,concurrency
+How does a sloppy (approximate) counter work?,"Per-CPU local counters with their own locks; when one reaches threshold S it's added to the global counter. Low contention, but the global value lags.",L15 · Lock-based concurrent data structures,concurrency
+What's the effect of increasing S in a sloppy counter?,"Better scalability, less accurate global count.",L15 · Lock-based concurrent data structures,concurrency
+Why does the Michael & Scott queue use a dummy node?,To keep the head and tail operations on separate nodes so the head lock and tail lock can be held concurrently.,L15 · Lock-based concurrent data structures,concurrency
+Why does a hash table with per-bucket locks scale well?,Operations on different buckets don't contend for the same lock.,L15 · Lock-based concurrent data structures,concurrency
+What's hand-over-hand locking and why is it often slow?,A lock per node; you grab the next node's lock before releasing the current one. The per-node lock overhead usually outweighs the extra concurrency.,L15 · Lock-based concurrent data structures,concurrency
+"What does pthread_cond_wait(c, m) do?","Atomically releases mutex m and puts the thread to sleep on c; when woken, re-acquires m before returning.",L16 · Condition variables,concurrency
+Why must you re-check the condition in a while loop?,Mesa semantics: the signal is only a hint and the state may change before the woken thread runs; spurious wakeups can also happen.,L16 · Condition variables,concurrency
+Why do we need a state variable along with a CV?,"CVs have no memory. If signal happens before wait, it's lost; the state variable records that the condition already holds.",L16 · Condition variables,concurrency
+Why does producer/consumer need two condition variables?,So a consumer only wakes producers and a producer only wakes consumers; with one CV a consumer can wake another consumer and everyone sleeps.,L16 · Condition variables,concurrency
+What is a covering condition?,Using broadcast to wake all waiters when you can't tell which one should proceed; each re-checks its condition.,L16 · Condition variables,concurrency
+Mesa vs Hoare semantics?,Mesa: signal is a hint; the woken thread runs later and must re-check. Hoare: the woken thread runs immediately with the guarantee. Real systems use Mesa.,L16 · Condition variables,concurrency
+What do sem_wait and sem_post do?,sem_wait decrements and sleeps if the value is negative; sem_post increments and wakes one waiter if any. Both are atomic.,L17 · Semaphores,concurrency
+What does a negative semaphore value mean?,Its magnitude is the number of threads waiting.,L17 · Semaphores,concurrency
+What initial value makes a semaphore a lock? For ordering?,1 for a lock (binary semaphore); 0 for ordering (wait until another thread posts).,L17 · Semaphores,concurrency
+Why must the mutex be acquired inside wait(empty)/wait(full) in producer/consumer?,"Otherwise a thread can sleep on full/empty while holding the mutex, so the other side can never get the mutex to post — deadlock.",L17 · Semaphores,concurrency
+How does a reader-writer lock work and what's its weakness?,"The first reader takes the write lock, the last reader releases it; writers need the write lock. Readers can starve writers.",L17 · Semaphores,concurrency
+How do you avoid deadlock in dining philosophers?,"Make one philosopher acquire forks in the opposite order, breaking the circular wait.",L17 · Semaphores,concurrency
+Key difference between a semaphore and a condition variable?,"A semaphore has state (its count), so a post before a wait isn't lost; a CV signal with no waiter is lost.",L17 · Semaphores,concurrency
+What are the two main kinds of non-deadlock concurrency bugs?,Atomicity violations (a sequence assumed atomic isn't) and order violations (an assumed ordering isn't enforced).,"L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+List the four conditions for deadlock.,"Mutual exclusion, hold-and-wait, no preemption, circular wait.","L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+What is the most practical way to prevent deadlock?,Break circular wait by acquiring locks in a fixed global order (e.g. by address).,"L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+What's livelock and how do you reduce it?,"Threads keep failing trylock, releasing and retrying without progress. Add a random delay before retrying.","L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+Prevention vs avoidance vs detection?,"Prevention: design so a deadlock condition can't hold. Avoidance: schedule so deadlock can't happen given known lock needs. Detection: let it happen, find cycles, recover.","L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+Why must event handlers never block?,There's one thread; a blocking call stops the whole server from handling any other event.,"L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+What's a continuation in event-based programming?,"Saved state needed to finish handling an event later, e.g. after async I/O completes.","L18 · Concurrency bugs, deadlock & event-based concurrency",concurrency
+What are the three registers of the canonical device interface?,"Status, command, data.",L19 · I/O devices,persistence
+When is polling better than interrupts?,"When the device is fast, so the first poll usually finds it done; interrupt handling and context switching would cost more.",L19 · I/O devices,persistence
+What is interrupt livelock?,A flood of interrupts (e.g. network packets) keeps the CPU busy handling interrupts so no real work gets done.,L19 · I/O devices,persistence
+What does DMA do?,"A DMA engine transfers data between memory and a device without the CPU copying it, then raises an interrupt when finished.",L19 · I/O devices,persistence
+Two ways the OS can access device registers?,Privileged I/O instructions (in/out) or memory-mapped I/O.,L19 · I/O devices,persistence
+Why are device drivers a reliability problem?,"They make up most of the kernel's code (~70% of Linux), are often written by less experienced developers, and run in kernel mode.",L19 · I/O devices,persistence
+What's the disk I/O time formula?,T_I/O = T_seek + T_rotation + T_transfer.,L20 · Hard disks (and SSDs in brief),persistence
+"Average rotational delay at 15,000 RPM?","One rotation = 4 ms, so average = 2 ms (half a rotation).",L20 · Hard disks (and SSDs in brief),persistence
+Roughly how much faster is sequential than random I/O on a hard disk?,"About 200–300×, e.g. 125 MB/s vs 0.66 MB/s.",L20 · Hard disks (and SSDs in brief),persistence
+What's the problem with SSTF?,Starvation of requests on far tracks; it also ignores rotational delay.,L20 · Hard disks (and SSDs in brief),persistence
+"What does SPTF do differently, and where is it implemented?","Picks the request with the least seek + rotation time; implemented inside the drive, which knows the head position and geometry.",L20 · Hard disks (and SSDs in brief),persistence
+What write is guaranteed atomic on a disk?,A single 512-byte sector write.,L20 · Hard disks (and SSDs in brief),persistence
+Why do SSDs need a flash translation layer?,"Flash must erase whole blocks before reprogramming pages and blocks wear out, so the FTL remaps writes log-style to fresh pages, garbage-collects and wear-levels.",L20 · Hard disks (and SSDs in brief),persistence
+What does RAID-0 provide and not provide?,Striping for full capacity and performance; no redundancy (any failure loses data).,L21 · RAID,persistence
+How does parity let RAID-4/5 recover a failed disk?,Parity is the XOR of the stripe's data blocks; XOR-ing the surviving blocks and parity reconstructs the missing one.,L21 · RAID,persistence
+"How many I/Os does a small write need in RAID-4/5, and why?","Four: read old data and old parity, write new data and new parity (subtractive parity).",L21 · RAID,persistence
+Why is RAID-4 slow for small random writes?,"Every write must update the single parity disk, which serializes all writes (total R/2).",L21 · RAID,persistence
+How does RAID-5 fix RAID-4's problem?,"It rotates parity across all disks, so small writes to different stripes can proceed in parallel (N/4·R).",L21 · RAID,persistence
+Why is RAID-1's sequential read only N/2·S?,"Each disk serves every other block; it rotates past blocks its mirror is serving, so it delivers only half its bandwidth.",L21 · RAID,persistence
+"Capacity of RAID-1, RAID-4, RAID-5 with N disks of B blocks?",RAID-1: N·B/2. RAID-4 and RAID-5: (N−1)·B.,L21 · RAID,persistence
+What is an inode number?,The file's low-level name; the file system uses it to find the inode (metadata and block pointers).,L22 · Files & directories (the API),persistence
+What does a directory contain?,"A list of (name, inode number) pairs, including ""."" and "".."".",L22 · Files & directories (the API),persistence
+When do two file descriptors share an offset?,When they refer to the same open-file-table entry: after fork() or dup(). Separate open() calls get separate offsets.,L22 · Files & directories (the API),persistence
+Why call fsync()?,write() buffers data in memory; fsync forces it (and metadata) to persistent storage.,L22 · Files & directories (the API),persistence
+How do you update a file atomically?,"Write a temporary file, fsync it, then rename() it over the original; rename is atomic.",L22 · Files & directories (the API),persistence
+Hard link vs symbolic link?,"Hard link: another name for the same inode (refcount). Symlink: a file containing a path; can cross file systems and point to directories, but can dangle.",L22 · Files & directories (the API),persistence
+Why is the call to remove a file named unlink()?,It removes one name (link) to the inode; the file is freed only when the link count drops to zero.,L22 · Files & directories (the API),persistence
+Name the five regions of VSFS's on-disk layout.,"Superblock, inode bitmap, data bitmap, inode table, data region.",L23 · File system implementation (VSFS),persistence
+What's in an inode?,"Metadata (type, size, owner, permissions, times, link count, block count) and pointers to data blocks.",L23 · File system implementation (VSFS),persistence
+"Max file size with 12 direct pointers, one indirect block, 4 KB blocks, 4-byte pointers?",(12 + 1024) × 4 KB = 4144 KB ≈ 4 MB.,L23 · File system implementation (VSFS),persistence
+Why does a multi-level (imbalanced) tree make sense for inodes?,Most files are small and fit in direct pointers; the rare large files use indirect blocks.,L23 · File system implementation (VSFS),persistence
+How many reads to open /foo/bar (no cache)?,"Five: root inode, root data, foo inode, foo data, bar inode.",L23 · File system implementation (VSFS),persistence
+Why does reading a file cause a write?,The inode's last-access time must be updated.,L23 · File system implementation (VSFS),persistence
+Three benefits of write buffering?,"Batching updates into fewer I/Os, better scheduling of writes, and avoiding writes entirely for short-lived files.",L23 · File system implementation (VSFS),persistence
+Extents vs pointers?,"An extent is a start pointer plus a length, describing a contiguous run with little metadata; pointers name each block but are more flexible.",L23 · File system implementation (VSFS),persistence
+Why was the original UNIX file system so slow?,"It ignored disk geometry: inodes far from data (long seeks), a fragmented free list, and tiny 512-byte blocks.",L24 · FFS: locality and the Fast File System,persistence
+What is a cylinder (block) group?,"A contiguous region of the disk with its own copy of the superblock, inode and data bitmaps, inodes and data blocks.",L24 · FFS: locality and the Fast File System,persistence
+Where does FFS place a new file and a new directory?,"File: same group as its parent directory, with its data near its inode. Directory: a group with few directories and many free inodes.",L24 · FFS: locality and the Fast File System,persistence
+Why does FFS spread large files across groups?,So one big file doesn't fill a group and destroy locality for other related files; chunks are large enough to amortise the seeks.,L24 · FFS: locality and the Fast File System,persistence
+What are sub-blocks for?,512-byte allocations for small files to avoid internal fragmentation with 4 KB blocks.,L24 · FFS: locality and the Fast File System,persistence
+Which three blocks must be written to append one data block?,"The inode, the data bitmap, and the data block.",L25 · Crash consistency: fsck & journaling,persistence
+What's the main drawback of fsck?,"It scans the entire disk, so recovery takes time proportional to disk size — far too slow for large disks.",L25 · Crash consistency: fsck & journaling,persistence
+List the steps of data journaling.,"Journal write (TxB + contents), journal commit (TxE), checkpoint (write in place), free the journal space.",L25 · Crash consistency: fsck & journaling,persistence
+"Why must TxE be written separately, after the rest?","The disk can reorder writes; if TxE lands first and the crash hits, recovery could replay garbage. TxE fits in one sector, so its write is atomic.",L25 · Crash consistency: fsck & journaling,persistence
+What does recovery do with the journal?,Replays (redoes) every committed transaction — those with a TxE — and ignores incomplete ones.,L25 · Crash consistency: fsck & journaling,persistence
+"In ordered metadata journaling, when is user data written?","To its final location before the journal commit, so metadata never points to garbage.",L25 · Crash consistency: fsck & journaling,persistence
+What rule underlies crash-consistent write ordering?,Write the pointed-to object before the object that points to it.,L25 · Crash consistency: fsck & journaling,persistence
+Why do metadata journaling instead of data journaling?,"Data journaling writes all data twice, halving write bandwidth; metadata is small.",L25 · Crash consistency: fsck & journaling,persistence
+What's the core idea of LFS?,Buffer all updates (data and metadata) in memory and write them sequentially as large segments to free space; never overwrite in place.,L26 · Log-structured file systems & data integrity,persistence
+Why does LFS need an inode map?,"Inodes move every time they're written, so the imap records each inode's current location.",L26 · Log-structured file systems & data integrity,persistence
+How does LFS find the imap?,"Through the checkpoint region, a fixed location that points to the latest imap pieces; it's updated periodically.",L26 · Log-structured file systems & data integrity,persistence
+How does the LFS cleaner decide if a block is live?,"The segment summary block gives the block's inode number and offset; if that inode (via the imap) still points to this address, it's live.",L26 · Log-structured file systems & data integrity,persistence
+What is a latent sector error vs silent corruption?,LSE: the disk detects the bad sector and returns an error. Silent corruption: the disk returns wrong data with no error.,L26 · Log-structured file systems & data integrity,persistence
+How do you detect misdirected writes?,Store the disk and sector address alongside the checksum and verify it on read.,L26 · Log-structured file systems & data integrity,persistence
+What is disk scrubbing?,Periodically reading all blocks and verifying checksums to find corruption early.,L26 · Log-structured file systems & data integrity,persistence
+How do you build reliable communication over an unreliable network?,"Acknowledgements, timeouts with retries, and sequence numbers to detect duplicates (plus checksums for corruption).","L27 · Distributed systems, NFS & AFS",distribution
+What does an RPC stub do?,"Marshals arguments into a message, sends it, waits for the reply and unmarshals the result, so a remote call looks like a local one.","L27 · Distributed systems, NFS & AFS",distribution
+"Why is NFSv2 stateless, and what does that buy?","Every request carries all needed information, so after a server crash clients simply retry — no state to rebuild.","L27 · Distributed systems, NFS & AFS",distribution
+What's in an NFS file handle?,"Volume ID, inode number, generation number.","L27 · Distributed systems, NFS & AFS",distribution
+"What does idempotent mean, and why does NFS need it?",Performing an operation more than once has the same effect as once; it makes retrying after timeouts safe.,"L27 · Distributed systems, NFS & AFS",distribution
+What are the two cache-consistency problems?,Update visibility (when do others see my writes) and stale cache (is my cached copy out of date).,"L27 · Distributed systems, NFS & AFS",distribution
+What is an AFS callback?,"A promise from the server to notify a client when a file it caches is modified, so the client needn't ask the server on each open.","L27 · Distributed systems, NFS & AFS",distribution
+Why must an NFS server commit writes to disk before replying?,"If it replied first and crashed, the client would think the data was safe when it was lost.","L27 · Distributed systems, NFS & AFS",distribution
