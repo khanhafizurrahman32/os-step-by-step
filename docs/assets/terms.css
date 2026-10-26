@@ -1,0 +1,13 @@
+/* Glossary terms: dotted underline + help cursor; readable tooltip text. */
+.md-typeset abbr[title] { cursor: help; }
+.md-typeset abbr[data-term] { cursor: help; text-decoration: underline dotted; }
+.md-typeset .md-tooltip2__inner { font-size: 0.68rem; line-height: 1.45; }
+
+/* Tap popup used on phones. */
+.term-pop {
+  position: fixed; z-index: 100; max-width: min(320px, calc(100vw - 16px));
+  padding: 0.6rem 0.75rem; border-radius: 6px;
+  background: var(--md-default-bg-color); color: var(--md-default-fg-color);
+  box-shadow: var(--md-shadow-z2); border: 1px solid var(--md-default-fg-color--lightest);
+  font-size: 0.8rem; line-height: 1.45;
+}

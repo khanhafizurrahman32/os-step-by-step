@@ -65,9 +65,12 @@ OSTEP is ~650 pages. Most exam and interview questions come from about a third o
 [Cheat sheet](docs/review/cheat-sheet.md) ·
 [Big chain map](docs/review/chain-map.md) ·
 [Mixed drills](docs/review/drills.md) ·
-[Flashcards / Anki deck](docs/review/flashcards.md)
+[Flashcards / Anki deck](docs/review/flashcards.md) ·
+[Glossary](docs/review/glossary.md)
 
 ## Every lesson has the same shape
+
+On the website, every key term has a dotted underline — hover over it (tap on a phone) to see its definition.
 
 `TL;DR` → `The crux` → `The story chain` → `Core ideas + diagram` → `Worked example` → `Traps` → `Recall (blurt · flashcards · explain it · simulator)` → `Connects to` → `Read in the book`
 

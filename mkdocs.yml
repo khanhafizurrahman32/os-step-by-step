@@ -15,6 +15,7 @@ theme:
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.tooltips
     - toc.follow
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -31,6 +32,7 @@ theme:
     logo: material/chip
 
 markdown_extensions:
+  - abbr
   - admonition
   - attr_list
   - md_in_html
@@ -39,6 +41,10 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tasklist: {custom_checkbox: true}
   - pymdownx.highlight
+  - pymdownx.snippets:
+      base_path: [includes]
+      auto_append: [glossary.md]
+      check_paths: true
   - pymdownx.inlinehilite
   - pymdownx.superfences:
       custom_fences:
@@ -94,3 +100,9 @@ nav:
       - The big chain map: review/chain-map.md
       - Mixed recall drills: review/drills.md
       - Flashcards (Anki): review/flashcards.md
+      - Glossary: review/glossary.md
+
+extra_javascript:
+  - assets/terms.js
+extra_css:
+  - assets/terms.css

@@ -6,3 +6,4 @@ Use these after you've done the lessons — they're built for **retrieval**, not
 - **[The big chain map](chain-map.md)** — every lesson's "problem → fix → what breaks" chain.
 - **[Mixed recall drills](drills.md)** — interleaved questions across all parts, with hidden answers.
 - **[Flashcards (Anki)](flashcards.md)** — all lesson flashcards as an importable deck.
+- **[Glossary](glossary.md)** — every term with its one-line definition (the same text you see when hovering a term).

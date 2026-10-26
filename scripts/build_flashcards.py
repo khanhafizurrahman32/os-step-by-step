@@ -109,7 +109,33 @@ def main():
             cell_a = a.replace("|", "\\|").replace("\n", " ")
             lines.append(f"| {cell_q} | {cell_a} |")
     (DOCS / "review" / "flashcards.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    build_glossary()
     print(f"{len(rows)} cards from {len(sections)} lessons -> {anki.relative_to(ROOT)}, {plain.relative_to(ROOT)}")
+
+
+def build_glossary():
+    """Turn includes/glossary.md (the hover-tooltip definitions) into a readable Glossary page."""
+    entries = re.findall(r"^\*\[(.+?)\]: (.+)$", (ROOT / "includes" / "glossary.md").read_text(encoding="utf-8"), re.M)
+    seen, rows = set(), []
+    for term, meaning in sorted(entries, key=lambda e: e[0].lower()):
+        key = term.lower().rstrip("s")
+        if key in seen:          # skip plural duplicates such as TLB / TLBs
+            continue
+        seen.add(key)
+        rows.append(f"| **{term}** | {meaning.replace('|', '/')} |")
+    page = [
+        "# Glossary",
+        "",
+        f"All **{len(rows)} terms** used in the lessons. On the website, every one of these terms has a dotted underline: "
+        "hover over it (or tap it on a phone) to see this definition without leaving the page.",
+        "",
+        "To add or change a definition, edit `includes/glossary.md` and re-run `python scripts/build_flashcards.py`.",
+        "",
+        "| Term | Meaning |",
+        "|---|---|",
+        *rows,
+    ]
+    (DOCS / "review" / "glossary.md").write_text("\n".join(page) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
