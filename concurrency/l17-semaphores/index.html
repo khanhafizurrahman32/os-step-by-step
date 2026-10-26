@@ -1,0 +1,2639 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l16-condvars/">
+      
+      
+        <link rel="next" href="../l18-deadlock/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L17 · Semaphores - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l17-semaphores" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L17 · Semaphores
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../persistence/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-initial-value-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What does the initial value mean?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#producerconsumer-correct-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Producer/consumer — correct version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reader-writer-lock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reader-writer lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dining-philosophers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dining philosophers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thread-throttling-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread throttling &amp; implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../persistence/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-the-initial-value-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What does the initial value mean?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#producerconsumer-correct-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Producer/consumer — correct version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reader-writer-lock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reader-writer lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dining-philosophers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dining philosophers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thread-throttling-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread throttling &amp; implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l17-semaphores">L17 · Semaphores<a class="headerlink" href="#l17-semaphores" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 31 (pp. 355–371) · <strong>Priority:</strong> 🔴 must-know · <strong>Time:</strong> 50 min · <strong>Code:</strong> <code>threads-sema/</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p>A <strong><abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr></strong> is a counter of available permits, like the number of free tables in a restaurant.</p>
+<ul>
+<li><code>sem_wait</code> = "take a table". If none are free, wait in line.</li>
+<li><code>sem_post</code> = "free a table", and the next person in line gets it.</li>
+</ul>
+<p>The number you start with decides what it does:</p>
+<ul>
+<li><strong>1</strong> permit → only one at a time, so it's a <strong>lock</strong>.</li>
+<li><strong>0</strong> permits → everyone waits until someone posts, so it's a <strong>"wait until X has happened"</strong> <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr>.</li>
+<li><strong>N</strong> permits → at most N at once, e.g. N buffer slots.</li>
+</ul>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A <strong><abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr></strong> is an integer with two <abbr title="All or nothing — can't be interrupted partway">atomic</abbr> operations: <strong><code>sem_wait</code></strong> (decrement; sleep if the result is negative) and <strong><code>sem_post</code></strong> (increment; wake one waiter). When negative, its value = <strong>−(number of waiters)</strong>.</li>
+<li><strong>The initial value decides the role:</strong> init <strong>1</strong> → a lock (<abbr title="A semaphore initialised to 1, used as a lock">binary semaphore</abbr>). Init <strong>0</strong> → ordering / a condition ("wait until X happened"). Init <strong>N</strong> → N available resources.</li>
+<li>Classic problems: <strong><abbr title="Bounded-buffer problem: producers add items, consumers remove them, sharing a fixed-size buffer">producer/consumer</abbr></strong> (<code>empty</code>=MAX, <code>full</code>=0, <code>mutex</code>=1 — and take the <abbr title="A lock providing mutual exclusion">mutex</abbr> <em>inside</em>), <strong>reader-writer locks</strong>, <strong><abbr title="Classic problem: five philosophers, five forks; shows how circular waiting deadlocks">dining philosophers</abbr></strong> (break the cycle: one philosopher picks forks in the opposite order).</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How can we use one primitive — the <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> — for both locks and <abbr title="Queues threads wait on until some state changes; used with a lock and a state variable">condition variables</abbr>?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Want one primitive for locks <em>and</em> waiting</strong> → <em>Dijkstra's <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr></em> → <em>init 1 = lock</em>, <em>init 0 = parent waits for child</em> → <em><abbr title="Fixed-size shared buffer between producers and consumers">bounded buffer</abbr> with <code>empty</code> and <code>full</code></em> → ❌ with several producers, two can <code>put()</code> into the same slot at once → <em>add a <abbr title="A lock providing mutual exclusion">mutex</abbr></em> → ❌ <abbr title="A lock providing mutual exclusion">mutex</abbr> taken <em>outside</em> the wait → consumer holds the <abbr title="A lock providing mutual exclusion">mutex</abbr> while sleeping on <code>full</code>; producer can't get the <abbr title="A lock providing mutual exclusion">mutex</abbr> → <strong><abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr></strong> → <em>move the <abbr title="A lock providing mutual exclusion">mutex</abbr> inside, around only put/get</em> → works. <em>Many readers, one writer</em> → <strong><abbr title="Lock allowing many readers or one writer at a time">reader-writer lock</abbr></strong> → ❌ writers can starve. <em>Philosophers all grab the left fork first</em> → ❌ <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> → <em>one grabs right first</em> (break the cycle).</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="definition">Definition<a class="headerlink" href="#definition" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="nf">sem_wait</span><span class="p">(</span><span class="n">sem_t</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">   </span><span class="c1">// atomically</span>
+<span class="w">    </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">value</span><span class="o">--</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">value</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">sleep</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">s</span><span class="err">'</span><span class="n">s</span><span class="w"> </span><span class="n">queue</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">sem_post</span><span class="p">(</span><span class="n">sem_t</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">   </span><span class="c1">// atomically</span>
+<span class="w">    </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">value</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">there</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">waiters</span><span class="p">)</span><span class="w"> </span><span class="n">wake</span><span class="w"> </span><span class="n">one</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In words:</p>
+<ul>
+<li><strong><code>sem_wait</code></strong>: subtract 1. If the result is negative, there were no permits left, so go to sleep.</li>
+<li><strong><code>sem_post</code></strong>: add 1. If anyone is sleeping, wake one of them.</li>
+<li>Both happen as one indivisible step.</li>
+<li>A nice side effect: when the value is negative, it tells you <strong>how many <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> are waiting</strong> (−2 means two are asleep).</li>
+</ul>
+<p>You set the starting value with <code>sem_init(&amp;s, 0, X);</code>. X is the starting value; the middle <code>0</code> just means "shared by the <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> of this one process".</p>
+<h3 id="what-does-the-initial-value-mean">What does the initial value mean?<a class="headerlink" href="#what-does-the-initial-value-mean" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Rule of thumb:</strong> initial value = how many resources you're willing to give away immediately.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Use</th>
+<th>Init</th>
+<th>Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lock</td>
+<td>1</td>
+<td><code>wait(&amp;m); critical; post(&amp;m);</code></td>
+</tr>
+<tr>
+<td>Ordering (parent waits for child)</td>
+<td>0</td>
+<td>parent <code>wait(&amp;s)</code>; child <code>post(&amp;s)</code></td>
+</tr>
+<tr>
+<td>Counting resources</td>
+<td>N</td>
+<td>each user waits, then posts when done</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Watch a <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> act as a lock</strong> (starting value 1):</p>
+<ol>
+<li>Thread T0 calls <code>wait</code>: 1 → 0. Not negative, so T0 enters the <abbr title="Code that accesses a shared resource and must not run concurrently">critical section</abbr>.</li>
+<li>Thread T1 calls <code>wait</code>: 0 → −1. Negative, so T1 sleeps.</li>
+<li>T0 finishes and calls <code>post</code>: −1 → 0, and T1 is woken.</li>
+<li>T1 enters, finishes, and calls <code>post</code>: 0 → 1. Back where we started.</li>
+</ol>
+<h3 id="producerconsumer-correct-version">Producer/consumer — correct version<a class="headerlink" href="#producerconsumer-correct-version" title="Permanent link">&para;</a></h3>
+<p>Same problem as in <a href="../l16-condvars/">L16</a>, solved with three <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr>:</p>
+<ul>
+<li><code>empty</code> counts <strong>free slots</strong> (starts at MAX). A producer must take one before adding.</li>
+<li><code>full</code> counts <strong>filled slots</strong> (starts at 0). A consumer must take one before removing.</li>
+<li><code>mutex</code> is a lock (starts at 1), so two <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> never change the buffer at the same moment.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">sem_t</span><span class="w"> </span><span class="n">empty</span><span class="p">;</span><span class="w">   </span><span class="c1">// = MAX   (free slots)</span>
+<span class="n">sem_t</span><span class="w"> </span><span class="n">full</span><span class="p">;</span><span class="w">    </span><span class="c1">// = 0     (filled slots)</span>
+<span class="n">sem_t</span><span class="w"> </span><span class="n">mutex</span><span class="p">;</span><span class="w">   </span><span class="c1">// = 1</span>
+
+<span class="nl">producer</span><span class="p">:</span><span class="w"> </span><span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">empty</span><span class="p">);</span><span class="w"> </span><span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span><span class="w"> </span><span class="n">put</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="w">   </span><span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span><span class="w"> </span><span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">full</span><span class="p">);</span>
+<span class="nl">consumer</span><span class="p">:</span><span class="w"> </span><span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">full</span><span class="p">);</span><span class="w">  </span><span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span><span class="w"> </span><span class="n">tmp</span><span class="o">=</span><span class="n">get</span><span class="p">();</span><span class="w"> </span><span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span><span class="w"> </span><span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">empty</span><span class="p">);</span>
+</code></pre></div>
+<pre class="mermaid"><code>flowchart LR
+    P[Producer] -- "wait(empty) → wait(mutex) → put → post(mutex) → post(full)" --&gt; B[(buffer, MAX slots)]
+    B -- "wait(full) → wait(mutex) → get → post(mutex) → post(empty)" --&gt; C[Consumer]</code></pre>
+<p><strong>The ordering <abbr title="An instruction that jumps into the kernel and raises privilege, used for system calls">trap</abbr>:</strong> suppose the consumer takes <code>mutex</code> <em>first</em> and then waits on <code>full</code>. If the buffer is empty, it goes to sleep <strong>while still holding the <abbr title="A lock providing mutual exclusion">mutex</abbr></strong>. The producer then tries to take the <abbr title="A lock providing mutual exclusion">mutex</abbr> to add an item, and <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> too. Each waits for the other forever: <strong><abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr></strong>. Rule: wait on <code>empty</code>/<code>full</code> <em>first</em>, and take the <abbr title="A lock providing mutual exclusion">mutex</abbr> only around the actual put/get.</p>
+<h3 id="reader-writer-lock">Reader-writer lock<a class="headerlink" href="#reader-writer-lock" title="Permanent link">&para;</a></h3>
+<p>Many <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> may safely <strong>read</strong> shared data at the same time; only <strong>writing</strong> needs to be exclusive. (Think of a library catalogue: many can browse, but an update needs everyone out of the way.)</p>
+<ul>
+<li>The <strong>first</strong> reader to arrive takes the write lock, which keeps writers out. Later readers just add 1 to a reader count and go in.</li>
+<li>The <strong>last</strong> reader to leave releases the write lock.</li>
+<li>A writer simply takes the write lock, so it waits until no readers remain.</li>
+<li>Problem: if readers keep arriving, the count never drops to zero and a writer can wait forever (<strong><abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr></strong>). Also, this lock has extra overhead, so a plain lock is often faster in practice.</li>
+</ul>
+<h3 id="dining-philosophers">Dining philosophers<a class="headerlink" href="#dining-philosophers" title="Permanent link">&para;</a></h3>
+<p>Five philosophers sit at a round table with <strong>one fork between each pair</strong>. To eat, a philosopher needs both the fork on the left and the fork on the right.</p>
+<ul>
+<li>If <strong>everyone</strong> picks up their left fork first, each holds one fork and waits for the right one, held by their neighbour. Nobody can eat, ever: <strong><abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr></strong>, caused by a circle of waiting.</li>
+<li><strong>Fix (Dijkstra):</strong> make <strong>one</strong> philosopher pick up right first, then left. That philosopher can't complete the circle, so at least one person always gets both forks.</li>
+</ul>
+<h3 id="thread-throttling-implementation">Thread throttling &amp; implementation<a class="headerlink" href="#thread-throttling-implementation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Throttling:</strong> start a <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> at N to allow at most N <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> into some expensive section at once, e.g. at most 4 <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> doing a memory-hungry step.</li>
+<li><strong>Building one:</strong> a <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> can be built from a lock, a <abbr title="A queue threads wait on until some state changes; used with a lock and a state variable">condition variable</abbr> and a counter (the book's "Zemaphore"). The reverse, building <abbr title="Queues threads wait on until some state changes; used with a lock and a state variable">condition variables</abbr> out of <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr>, is surprisingly hard.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Semaphores <strong>remember</strong> posts (the value goes up); <abbr title="Condition variables — queues threads wait on until some state changes">CVs</abbr> don't. A post with no waiter isn't lost.</li>
+<li>Mutex <strong>inside</strong> the empty/full waits, never outside.</li>
+<li>Init 0 vs init 1 is the whole difference between "ordering" and "lock".</li>
+<li>Binary <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr> ≠ <abbr title="Condition variables — queues threads wait on until some state changes">CVs</abbr> in general; a <abbr title="Condition variable — a queue threads wait on until some state changes">CV</abbr>'s wait also releases a lock.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: the definition; the init-value table; <abbr title="Bounded-buffer problem: producers add items, consumers remove them, sharing a fixed-size buffer">producer/consumer</abbr> with all three <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr> in the right order; dining-philosopher fix.</p>
+<details>
+<summary>What do sem_wait and sem_post do?</summary>
+<p>sem_wait decrements and sleeps if the value is negative; sem_post increments and wakes one waiter if any. Both are <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>.</p>
+</details>
+<details>
+<summary>What does a negative semaphore value mean?</summary>
+<p>Its magnitude is the number of <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> waiting.</p>
+</details>
+<details>
+<summary>What initial value makes a semaphore a lock? For ordering?</summary>
+<p>1 for a lock (<abbr title="A semaphore initialised to 1, used as a lock">binary semaphore</abbr>); 0 for ordering (wait until another <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> posts).</p>
+</details>
+<details>
+<summary>Why must the mutex be acquired inside wait(empty)/wait(full) in producer/consumer?</summary>
+<p>Otherwise a <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> can sleep on full/empty while holding the <abbr title="A lock providing mutual exclusion">mutex</abbr>, so the other side can never get the <abbr title="A lock providing mutual exclusion">mutex</abbr> to post — <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>.</p>
+</details>
+<details>
+<summary>How does a reader-writer lock work and what's its weakness?</summary>
+<p>The first reader takes the write lock, the last reader releases it; writers need the write lock. Readers can starve writers.</p>
+</details>
+<details>
+<summary>How do you avoid deadlock in dining philosophers?</summary>
+<p>Make one philosopher acquire forks in the opposite order, breaking the <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>.</p>
+</details>
+<details>
+<summary>Key difference between a semaphore and a condition variable?</summary>
+<p>A <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> has state (its count), so a post before a wait isn't lost; a <abbr title="Condition variable — a queue threads wait on until some state changes">CV</abbr> <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr> with no waiter is lost.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "Build <abbr title="Bounded-buffer problem: producers add items, consumers remove them, sharing a fixed-size buffer">producer/consumer</abbr> with <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr> and tell me the one ordering mistake that deadlocks it."</p>
+<p><strong>Code drill:</strong> in <code>threads-sema/</code>, implement <code>fork-join.c</code>, <code>rendezvous.c</code> and <code>barrier.c</code> (each needs only 1–2 <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr>).</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Locks → <a href="../l14-locks/">L14</a> · <abbr title="Condition variables — queues threads wait on until some state changes">CVs</abbr> → <a href="../l16-condvars/">L16</a></li>
+<li>Deadlock in general → <a href="../l18-deadlock/">L18</a></li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 31.1–31.4 (definition, binary, ordering, <abbr title="Fixed-size shared buffer between producers and consumers">bounded buffer</abbr> — follow every attempt).</li>
+<li>🟡 31.5–31.7 (RW locks, philosophers, implementing <abbr title="Integers with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphores</abbr>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l16-condvars/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L16 · Condition variables">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L16 · Condition variables
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../l18-deadlock/" class="md-footer__link md-footer__link--next" aria-label="Next: L18 · Bugs, deadlock &amp; events">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                L18 · Bugs, deadlock & events
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

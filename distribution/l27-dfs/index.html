@@ -1,0 +1,2582 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../review/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L27 · Distributed systems, NFS, AFS - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l27-distributed-systems-nfs-afs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L27 · Distributed systems, NFS, AFS
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../persistence/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../persistence/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#communication-basics-ch-47" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication basics (Ch 47)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfsv2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFSv2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#afs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#communication-basics-ch-47" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication basics (Ch 47)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfsv2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFSv2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#afs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l27-distributed-systems-nfs-afs">L27 · Distributed systems, <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> &amp; <abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr><a class="headerlink" href="#l27-distributed-systems-nfs-afs" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 47 (pp. 559–574) · Ch 48 (pp. 575–590) · Ch 49 (pp. 591–604) · <strong>Priority:</strong> 🟡 good to know · <strong>Time:</strong> 50 min · <strong>Simulator:</strong> <code>dist-afs/afs.py</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p>A <strong>distributed file system</strong> lets many computers use files stored on a server, over a network that can lose messages or crash.</p>
+<ul>
+<li><strong>The basic tools:</strong> if there's no reply, send again (<em>retry</em>); number your messages so duplicates are spotted.</li>
+<li><strong><abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr>:</strong> the server remembers <em>nothing</em> about clients (<strong><abbr title="The server keeps no per-client state; every request carries all it needs">stateless</abbr></strong>). Every request says exactly what it wants ("write these bytes at position 4096 of file #123"), so asking twice is harmless (<strong><abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr></strong>). If the server crashes and reboots, clients just retry.</li>
+<li><strong><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr>:</strong> clients copy the <strong>whole file</strong> to their own disk. The server promises to tell them if someone else changes it (a <strong><abbr title="A server's promise to tell a client when a file it caches changes">callback</abbr></strong>), so clients rarely need to ask the server anything.</li>
+</ul>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Networks <strong>lose packets</strong>. Build reliability with <strong>acknowledgements + timeouts + retries</strong>, and <strong>sequence numbers</strong> to drop duplicates. <strong><abbr title="Remote procedure call — makes a call to another machine look like a local function call">RPC</abbr></strong> makes a remote call look like a local one (stubs, <abbr title="Packing arguments into a message for sending">marshalling</abbr>).</li>
+<li><strong><abbr title="Version 2 of Sun's Network File System — stateless protocol">NFSv2</abbr></strong> is <strong><abbr title="The server keeps no per-client state; every request carries all it needs">stateless</abbr></strong>: every request carries everything needed (a <strong><abbr title="NFS file identifier: volume ID + inode number + generation number">file handle</abbr></strong> + offset), and operations are <strong><abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr></strong>, so a client can simply <strong>retry</strong> after a server crash. Caching brings the <strong><abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>-consistency</strong> problem → flush on close, check attributes (with a short <abbr title="NFS client cache of file attributes, valid for a few seconds">attribute cache</abbr>).</li>
+<li><strong><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr></strong> caches <strong>whole files</strong> on the client's local disk and uses <strong><abbr title="Server promises to tell clients when files they cache change">callbacks</abbr></strong>: the server promises to tell clients when a file changes → far fewer server messages, scales better. Semantics: <strong>last closer wins</strong>.</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How do we build systems that work when components fail — and in particular, a distributed file system that survives server crashes and scales to many clients?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Packets get lost</strong> → <em>ack + timeout + retry</em> → ❌ duplicates if the ack was lost → <em>sequence numbers</em> → <em>wrap it in <abbr title="Remote procedure call — makes a call to another machine look like a local function call">RPC</abbr></em>. <strong>Share files over a network</strong> → <em><abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr>: <abbr title="The server keeps no per-client state; every request carries all it needs">stateless</abbr> protocol, file handles, <abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr> ops</em> → server crash = client just retries → <em>client caching for speed</em> → ❌ <strong>update visibility</strong> (when do others see my write?) → <em>flush on close</em> → ❌ <strong>stale <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr></strong> (do I have the old version?) → <em><abbr title="NFS request for a file's attributes, used to check whether a cached copy is stale">GETATTR</abbr> before using <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr></em> → ❌ server flooded with GETATTRs → <em><abbr title="NFS client cache of file attributes, valid for a few seconds">attribute cache</abbr> (~3 s)</em> → odd semantics. <strong><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr>:</strong> ❌ AFSv1 server overloaded by path traversal and TestAuth checks → <em>AFSv2: <abbr title="Server promises to tell clients when files they cache change">callbacks</abbr> + file identifiers (FIDs), whole-file caching</em> → consistent, scalable; crash recovery needs care.</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="communication-basics-ch-47">Communication basics (Ch 47)<a class="headerlink" href="#communication-basics-ch-47" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Networks lose messages.</strong> The basic network service (<abbr title="A network protocol that sends messages with no delivery guarantee">UDP</abbr>) just sends a message and hopes. To make delivery reliable (as <abbr title="A network protocol that delivers a reliable, ordered byte stream">TCP</abbr> does):<ul>
+<li>the receiver sends back an <strong>acknowledgement</strong> ("got it");</li>
+<li>if the sender hears nothing within a set time (a <strong>timeout</strong>), it sends again (<strong>retry</strong>);</li>
+<li>if the message arrived but the ack was lost, the retry creates a duplicate, so each message carries a <strong>sequence number</strong> and the receiver ignores numbers it has already seen;</li>
+<li>a <strong><abbr title="Small value computed from data to detect corruption">checksum</abbr></strong> detects messages damaged in transit.</li>
+</ul>
+</li>
+<li><strong>End-to-end argument:</strong> only the application at each end can be sure the whole job worked (e.g. the file really arrived intact on disk). Lower layers can make failures rarer, but the final check belongs at the top.</li>
+<li><strong><abbr title="Remote procedure call — makes a call to another machine look like a local function call">RPC</abbr> (remote procedure call)</strong> makes calling a function on another machine look like a normal function call. Generated helper code (a <strong><abbr title="Generated RPC code that marshals arguments and sends the message">stub</abbr></strong>) packs the arguments into a message (<strong><abbr title="Packing arguments into a message for sending">marshalling</abbr></strong>), sends it, and waits; on the server, another <abbr title="Generated RPC code that marshals arguments and sends the message">stub</abbr> unpacks them, calls the real function and sends back the result. Hard parts: finding the server, handling lost messages, big arguments, and machines that <abbr title="CPU instruction that writes a register's value to memory">store</abbr> numbers in different byte orders.</li>
+</ul>
+<h3 id="nfsv2"><abbr title="Version 2 of Sun's Network File System — stateless protocol">NFSv2</abbr><a class="headerlink" href="#nfsv2" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant C as Client
+    participant S as NFS server (stateless)
+    C-&gt;&gt;S: LOOKUP(dir handle, "foo")
+    S--&gt;&gt;C: file handle (volume id, inode #, generation #) + attrs
+    C-&gt;&gt;S: READ(fh, offset=0, count=4096)
+    S--&gt;&gt;C: data + attrs
+    Note over C: client tracks the offset itself
+    C-xS: WRITE(fh, offset, data)  — lost / server crashed
+    C-&gt;&gt;S: WRITE(fh, offset, data)  — retry: idempotent, same result</code></pre>
+<p>How to read the diagram: the client first looks up "foo" and gets a <strong><abbr title="NFS file identifier: volume ID + inode number + generation number">file handle</abbr></strong>, a permanent ID for the file. Every later request carries that handle <em>and</em> the exact position, so the server needs no memory of earlier requests. When a write is lost, the client simply sends the identical request again.</p>
+<ul>
+<li><strong>What's in a <abbr title="NFS file identifier: volume ID + inode number + generation number">file handle</abbr>:</strong> which disk (volume ID) + which file (<abbr title="The file's low-level name; locates its inode">inode number</abbr>) + a <strong>generation number</strong>. The generation number changes whenever an <abbr title="The file's low-level name; locates its inode">inode number</abbr> is reused for a new file, so a stale handle can't accidentally reach the wrong file.</li>
+<li><strong>Idempotent</strong> means "doing it twice has the same effect as doing it once". "Write these bytes at position 4096" is <abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr>: repeat it and the result is identical. So are READ and <abbr title="NFS request for a file's attributes, used to check whether a cached copy is stale">GETATTR</abbr>. Compare "append these bytes", which would add them twice. (MKDIR isn't <abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr> either: the second attempt fails with "already exists".) Idempotency is what makes "just retry" safe.</li>
+<li><strong>The server must save writes to disk <em>before</em> saying "done".</strong> Otherwise it could crash after replying, and the client would believe lost data was safe. This makes <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> writes slow, so <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> servers often use battery-backed memory to speed them up.</li>
+</ul>
+<h3 id="cache-consistency">Cache consistency<a class="headerlink" href="#cache-consistency" title="Permanent link">&para;</a></h3>
+<p>Clients keep copies of files in their own memory (a <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>) to avoid asking the server every time. But copies cause two problems:</p>
+<ul>
+<li><strong>Update visibility:</strong> I changed my copy. When do <em>other</em> clients see the change?</li>
+<li><strong>Stale <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>:</strong> my copy might be out of date because someone else changed the file. How do I find out?</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th><abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> answer</th>
+<th><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Update visibility</strong> — when do others see my writes?</td>
+<td>Flush dirty data on <code>close()</code></td>
+<td>Whole file sent to server on <code>close()</code></td>
+</tr>
+<tr>
+<td><strong>Stale <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr></strong> — is my copy out of date?</td>
+<td>Before using the <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>, ask the server for the file's details (<abbr title="NFS request for a file's attributes, used to check whether a cached copy is stale">GETATTR</abbr>) to see if it changed. To avoid asking constantly, trust the answer for about 3 seconds</td>
+<td><strong>Callback:</strong> the server promises to tell you when someone changes the file. Until then, your copy is good</td>
+</tr>
+<tr>
+<td>Load on the server</td>
+<td>High: lots of "has it changed?" questions</td>
+<td>Low: the server only speaks up when something changes</td>
+</tr>
+<tr>
+<td>Two clients write the same file</td>
+<td>Their <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> can end up mixed together</td>
+<td>The whole file from whoever <strong>closes last</strong> wins</td>
+</tr>
+</tbody>
+</table>
+<h3 id="afs"><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr><a class="headerlink" href="#afs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> version 1:</strong> clients copied whole files to their local disk, which was good. But on <strong>every</strong> open they asked the server "has this changed?", and the server had to look up the full path name each time. The server spent all its CPU time answering and could only support about 20 clients.</li>
+<li><strong><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> version 2</strong> fixed this:<ul>
+<li><strong>Callbacks:</strong> the server remembers who has a copy of what and notifies them when it changes, so clients stop asking.</li>
+<li><strong>File IDs (FIDs):</strong> clients look up path names themselves (caching the directories they pass through) and send the server a compact file ID instead of a long path.</li>
+<li>Result: about 50 clients per server.</li>
+</ul>
+</li>
+<li><strong>Crashes are harder</strong> because the server now <em>remembers</em> things (it is <em>stateful</em>). A client that reboots may have missed <abbr title="Server promises to tell clients when files they cache change">callbacks</abbr>, so it must re-check its cached files. A server that reboots has forgotten who has copies, so it must tell all clients to re-check (or clients regularly ask "are you still there?").</li>
+<li><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> also offered one shared folder tree for everyone, access control lists, quotas and secure login (Kerberos).</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>"Stateless" means the server keeps <strong>no per-client state</strong> about open files — not that it has no data.</li>
+<li><abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> write semantics: data is visible to others only after the writer <strong>closes</strong> (and the reader's attr <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> expires).</li>
+<li><abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> on-close semantics: other processes on the <strong>same</strong> machine see writes immediately; other machines see them on close.</li>
+<li>Idempotency is what makes "just retry" safe.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: the <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> chain (<abbr title="The server keeps no per-client state; every request carries all it needs">stateless</abbr> → <abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr> → retry → caching → visibility &amp; staleness → attr <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>); the <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> vs <abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> table.</p>
+<details>
+<summary>How do you build reliable communication over an unreliable network?</summary>
+<p>Acknowledgements, timeouts with retries, and sequence numbers to detect duplicates (plus <abbr title="Small values computed from data to detect corruption">checksums</abbr> for corruption).</p>
+</details>
+<details>
+<summary>What does an RPC stub do?</summary>
+<p>Marshals arguments into a message, sends it, waits for the reply and unmarshals the result, so a remote call looks like a local one.</p>
+</details>
+<details>
+<summary>Why is NFSv2 stateless, and what does that buy?</summary>
+<p>Every request carries all needed information, so after a server crash clients simply retry — no state to rebuild.</p>
+</details>
+<details>
+<summary>What's in an NFS file handle?</summary>
+<p>Volume ID, <abbr title="The file's low-level name; locates its inode">inode number</abbr>, generation number.</p>
+</details>
+<details>
+<summary>What does idempotent mean, and why does NFS need it?</summary>
+<p>Performing an operation more than once has the same effect as once; it makes retrying after timeouts safe.</p>
+</details>
+<details>
+<summary>What are the two cache-consistency problems?</summary>
+<p>Update visibility (when do others see my writes) and stale <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> (is my cached copy out of date).</p>
+</details>
+<details>
+<summary>What is an AFS callback?</summary>
+<p>A promise from the server to notify a client when a file it caches is modified, so the client needn't ask the server on each open.</p>
+</details>
+<details>
+<summary>Why must an NFS server commit writes to disk before replying?</summary>
+<p>If it replied first and crashed, the client would think the data was safe when it was lost.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "Compare how <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> and <abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> keep client caches consistent, and why <abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> scales better."</p>
+<p><strong>Simulator drill</strong> (book's free Python homework tools — see <a href="../../start/recall-system/#four-more-tricks-that-pay-off">the recall system</a>): <code>python3 afs.py -C 2 -n 1 -s 12 -c</code> — predict which values each client reads and when <abbr title="Server promises to tell clients when files they cache change">callbacks</abbr> fire.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Write-ahead logging and <abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr> replay → <a href="../../persistence/l25-journaling/">L25 Journaling</a></li>
+<li>File API semantics (open/close/fsync) → <a href="../../persistence/l22-files-api/">L22</a></li>
+<li>Caching trade-offs → <a href="../../virtualization/l10-tlb/">L10</a>, <a href="../../virtualization/l12-swapping/">L12</a></li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🟡 Ch 47: 47.1–47.5 (unreliable/reliable communication, <abbr title="Remote procedure call — makes a call to another machine look like a local function call">RPC</abbr>).</li>
+<li>🟡 Ch 48: 48.4–48.10 (<abbr title="The server keeps no per-client state; every request carries all it needs">stateless</abbr> protocol, idempotency, caching, <abbr title="Delaying writes in memory (5–30 s) to batch and schedule them">write buffering</abbr>).</li>
+<li>🟡 Ch 49: 49.1–49.5 (AFSv1 problems, AFSv2 <abbr title="Server promises to tell clients when files they cache change">callbacks</abbr>, consistency).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Part IV · Distribution">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Part IV · Distribution
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../review/" class="md-footer__link md-footer__link--next" aria-label="Next: Review">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Review
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

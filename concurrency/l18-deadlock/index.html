@@ -1,0 +1,2588 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l17-semaphores/">
+      
+      
+        <link rel="next" href="../../persistence/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L18 · Bugs, deadlock & events - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l18-concurrency-bugs-deadlock-event-based-concurrency" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L18 · Bugs, deadlock & events
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../persistence/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#non-deadlock-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-deadlock bugs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-four-deadlock-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The four deadlock conditions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#avoidance-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Avoidance, detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-based-concurrency-ch-33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-based concurrency (Ch 33)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../persistence/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#non-deadlock-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-deadlock bugs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-four-deadlock-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The four deadlock conditions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#avoidance-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Avoidance, detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-based-concurrency-ch-33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event-based concurrency (Ch 33)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l18-concurrency-bugs-deadlock-event-based-concurrency">L18 · Concurrency bugs, <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> &amp; event-based <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr><a class="headerlink" href="#l18-concurrency-bugs-deadlock-event-based-concurrency" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 32 (pp. 373–387) 🔴 · Ch 33 (pp. 389–400) 🟡 · <strong>Time:</strong> 50 min · <strong>Code:</strong> <code>threads-bugs/</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p><strong>Deadlock</strong> is four cars arriving at a four-way junction at once, each waiting for the car on its right to go first. Nobody moves, ever.</p>
+<p>It only happens if <strong>all four</strong> of these are true at once:</p>
+<ol>
+<li>Only one can hold a thing (<abbr title="Only one thread may be in the critical section at a time">mutual exclusion</abbr>).</li>
+<li>You hold one thing while waiting for another (<abbr title="Holding one resource while waiting for another — a deadlock condition">hold-and-wait</abbr>).</li>
+<li>Nobody can take a thing away from you (no preemption).</li>
+<li>There's a cycle of waiting (<abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>).</li>
+</ol>
+<p>Break any one and <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> is impossible. The everyday fix is a <strong>rule for the order</strong> in which locks are taken ("always lock A before B"). That breaks the cycle.</p>
+<p>Most real bugs, though, aren't deadlocks. They're simpler mistakes: forgetting to lock, or assuming one thing happens before another.</p>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Most real <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr> bugs are <strong>not</strong> deadlocks: they're <strong><abbr title="The property of executing all at once, as one indivisible step">atomicity</abbr> violations</strong> (a check-then-use isn't protected) and <strong>order violations</strong> (A assumed to happen before B). Fix with locks and <abbr title="Condition variables — queues threads wait on until some state changes">CVs</abbr>.</li>
+<li><strong>Deadlock needs all four:</strong> <abbr title="Only one thread may be in the critical section at a time">mutual exclusion</abbr>, <abbr title="Holding one resource while waiting for another — a deadlock condition">hold-and-wait</abbr>, no preemption, <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>. Break any one. In practice: <strong><abbr title="Always acquire locks in the same global order to prevent circular wait">lock ordering</abbr></strong> (break <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>).</li>
+<li><strong>Event-based</strong> servers use one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> and an <abbr title="A single thread that waits for events and runs a handler for each">event loop</abbr> with <code>select()</code>/<code>poll()</code> — no locks, but blocking calls ruin it, so they need <strong>asynchronous I/O</strong> and manual state management.</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How do we handle common <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr> bugs, and in particular, how do we prevent, avoid or recover from <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Study of real bugs (MySQL, Apache, Mozilla, OpenOffice)</strong> → ~<strong>97% of non-<abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> bugs</strong> are <abbr title="The property of executing all at once, as one indivisible step">atomicity</abbr> or order violations → <em>locks and <abbr title="Condition variables — queues threads wait on until some state changes">CVs</abbr> fix them</em>. <strong>Deadlock</strong> → <em>why it happens</em>: big systems have complex dependencies, and encapsulation hides locking (<code>v1.AddAll(v2)</code> vs <code>v2.AddAll(v1)</code>) → <em>four conditions</em> → <strong>prevention</strong> (break a condition) / <strong>avoidance</strong> (smart scheduling, Banker's) / <strong>detect and recover</strong>. <strong>Event loops</strong> as an alternative to <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> → ❌ blocking syscalls stall everything → <em><abbr title="I/O that returns immediately; completion is checked later or signalled">async I/O</abbr> (AIO)</em> → ❌ state must be saved by hand (<strong>continuations</strong>) → ❌ doesn't use multiple CPUs easily; page faults still <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>.</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="non-deadlock-bugs">Non-<abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> bugs<a class="headerlink" href="#non-deadlock-bugs" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Example</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Atomicity violation</strong> — two steps that must happen together get split</td>
+<td>Thread 1 checks "is the <abbr title="A variable that holds a memory address">pointer</abbr> non-empty?" and then uses it. In between, <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 2 sets the <abbr title="A variable that holds a memory address">pointer</abbr> to NULL, and <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 1 crashes. (Real bug from MySQL)</td>
+<td>Do the check and the use under one lock</td>
+</tr>
+<tr>
+<td><strong>Order violation</strong> — code assumes A happens before B, but nothing guarantees it</td>
+<td>Thread 2 uses an object that <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 1 is <em>supposed</em> to have created first, but <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 2 got there sooner. (Real bug from Mozilla)</td>
+<td>Make <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 2 wait for a <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr> from <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 1 (<abbr title="Condition variable — a queue threads wait on until some state changes">CV</abbr> or <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-four-deadlock-conditions">The four <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> conditions<a class="headerlink" href="#the-four-deadlock-conditions" title="Permanent link">&para;</a></h3>
+<p>The smallest possible <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>: <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 1 holds lock L1 and wants L2; <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> 2 holds L2 and wants L1. Each waits for the other forever.</p>
+<pre class="mermaid"><code>flowchart LR
+    T1((Thread 1)) -- holds --&gt; L1[Lock L1]
+    T1 -. wants .-&gt; L2[Lock L2]
+    T2((Thread 2)) -- holds --&gt; L2
+    T2 -. wants .-&gt; L1</code></pre>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Meaning</th>
+<th>How to break it (prevention)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mutual exclusion</strong></td>
+<td>A resource can only be held by one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> at a time</td>
+<td>Avoid locks altogether with <strong>lock-free</strong> data structures built on <abbr title="All or nothing — can't be interrupted partway">atomic</abbr> <abbr title="Basic CPU operations, such as load, add or store">instructions</abbr> like <abbr title="Compare-and-swap — atomic: if *ptr equals expected, store new; return the old value">CAS</abbr>. Powerful but very hard to get right</td>
+</tr>
+<tr>
+<td><strong>Hold-and-wait</strong></td>
+<td>A <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> holds one lock while waiting for another</td>
+<td>Take <strong>all</strong> the locks you need at once, up front. Safe, but <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> hold locks longer than needed, so less runs in parallel</td>
+</tr>
+<tr>
+<td><strong>No preemption</strong></td>
+<td>Nobody can take a lock away from its holder</td>
+<td>Use <code>trylock</code> ("take it if free, otherwise tell me"). If you can't get the second lock, <strong>release the first</strong> and start again. Risk: two <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> keep backing off and retrying in step forever (<strong><abbr title="Threads keep acting (e.g. retrying) but none makes progress">livelock</abbr></strong>); a random pause before retrying fixes that</td>
+</tr>
+<tr>
+<td><strong>Circular wait</strong></td>
+<td>Threads wait in a circle: A for B, B for C, C for A</td>
+<td><strong>Lock ordering:</strong> everyone takes locks in the same agreed order (e.g. always L1 before L2), so a circle can't form. Handy trick: order locks by their memory address. <strong>This is the fix used most in practice</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="avoidance-detection">Avoidance, detection<a class="headerlink" href="#avoidance-detection" title="Permanent link">&para;</a></h3>
+<p>Prevention (above) designs <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> out. Two other strategies:</p>
+<ul>
+<li><strong>Avoidance:</strong> if you know in advance which locks each <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> will need, the scheduler can simply never run two <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> together that could <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>. Dijkstra's <strong><abbr title="Dijkstra's deadlock-avoidance algorithm: only grant requests that keep the system in a safe state">Banker's algorithm</abbr></strong> is the classic version. It only works when needs are known up front, which is rare.</li>
+<li><strong>Detect and recover:</strong> allow deadlocks, but check now and then. Draw who-waits-for-whom as a graph; a cycle means <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>, so cancel or restart one of the <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr>. Databases do this: one transaction is cancelled and retried.</li>
+</ul>
+<h3 id="event-based-concurrency-ch-33">Event-based <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr> (Ch 33)<a class="headerlink" href="#event-based-concurrency-ch-33" title="Permanent link">&para;</a></h3>
+<p>A completely different way to handle many things at once: <strong>don't use <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> at all</strong>. Use one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> running an <strong><abbr title="A single thread that waits for events and runs a handler for each">event loop</abbr></strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getEvents</span><span class="p">();</span><span class="w">        </span><span class="c1">// select() / poll() / epoll</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">events</span><span class="p">)</span>
+<span class="w">        </span><span class="n">processEvent</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">         </span><span class="c1">// handler runs to completion</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The loop asks the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> "which connections have something ready?" (<code>select</code>, <code>poll</code> or <code>epoll</code>), then handles each ready one in turn. Each handler runs from start to finish without interruption.</p>
+<ul>
+<li><strong>Pros:</strong> only one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr>, so no locks and no race conditions (on one CPU), and you decide exactly what runs when.</li>
+<li><strong>Cons:</strong><ul>
+<li>A handler must <strong>never wait</strong>. If one handler <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> on a slow disk read, the whole server freezes. So you need <strong>asynchronous I/O</strong>: start the read, return to the loop, and get notified when it's done.</li>
+<li>Because a handler can't wait, any state needed later (e.g. "which client was this read for?") must be saved by hand and picked up when the notification arrives (a <strong><abbr title="State saved so an event's handling can resume later, e.g. after async I/O">continuation</abbr></strong>).</li>
+<li>Using several CPUs means several loops, and the locks come back.</li>
+</ul>
+</li>
+<li>This is how <strong>Node.js</strong> and <strong>nginx</strong> work, and it's why "don't <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> the <abbr title="A single thread that waits for events and runs a handler for each">event loop</abbr>" is the first rule of Node.js.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Deadlock requires <strong>all four</strong> conditions; the usual fix is ordering, not removing <abbr title="Only one thread may be in the critical section at a time">mutual exclusion</abbr>.</li>
+<li><code>trylock</code>-and-retry can <strong><abbr title="Threads keep acting (e.g. retrying) but none makes progress">livelock</abbr></strong>: everyone keeps backing off and retrying.</li>
+<li>Encapsulation hides lock order — library calls can <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> with no obvious lock in your code.</li>
+<li>Event loops are lock-free only on <strong>one</strong> CPU.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: two non-<abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> bug types with an example; four conditions and one fix each; <abbr title="A single thread that waits for events and runs a handler for each">event loop</abbr> pros/cons.</p>
+<details>
+<summary>What are the two main kinds of non-deadlock concurrency bugs?</summary>
+<p>Atomicity violations (a sequence assumed <abbr title="All or nothing — can't be interrupted partway">atomic</abbr> isn't) and order violations (an assumed ordering isn't enforced).</p>
+</details>
+<details>
+<summary>List the four conditions for deadlock.</summary>
+<p>Mutual exclusion, <abbr title="Holding one resource while waiting for another — a deadlock condition">hold-and-wait</abbr>, no preemption, <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>.</p>
+</details>
+<details>
+<summary>What is the most practical way to prevent deadlock?</summary>
+<p>Break <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr> by acquiring locks in a fixed global order (e.g. by address).</p>
+</details>
+<details>
+<summary>What's livelock and how do you reduce it?</summary>
+<p>Threads keep failing trylock, releasing and retrying without progress. Add a random delay before retrying.</p>
+</details>
+<details>
+<summary>Prevention vs avoidance vs detection?</summary>
+<p>Prevention: design so a <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> condition can't hold. Avoidance: schedule so <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> can't happen given known lock needs. Detection: let it happen, find cycles, recover.</p>
+</details>
+<details>
+<summary>Why must event handlers never block?</summary>
+<p>There's one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr>; a blocking call stops the whole server from handling any other event.</p>
+</details>
+<details>
+<summary>What's a continuation in event-based programming?</summary>
+<p>Saved state needed to finish handling an event later, e.g. after <abbr title="I/O that returns immediately; completion is checked later or signalled">async I/O</abbr> completes.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "Give me the four <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> conditions and tell me which one you'd break in a real codebase, and how."</p>
+<p><strong>Code drill:</strong> in <code>threads-bugs/</code>, run <code>vector-deadlock</code> until it hangs, then read <code>vector-global-order.c</code> and <code>vector-avoid-hold-and-wait.c</code> to see two fixes.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Lock ordering in <a href="../l15-concurrent-ds/">L15</a> data structures</li>
+<li>Dining philosophers → <a href="../l17-semaphores/">L17</a></li>
+<li><code>select()</code>-style I/O → <a href="../../persistence/l19-io/">L19 I/O devices</a></li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 32.2–32.3 — the four conditions with all prevention techniques.</li>
+<li>🟡 Ch 33: 33.1–33.6.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l17-semaphores/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L17 · Semaphores">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L17 · Semaphores
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../persistence/" class="md-footer__link md-footer__link--next" aria-label="Next: Part III · Persistence">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Part III · Persistence
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

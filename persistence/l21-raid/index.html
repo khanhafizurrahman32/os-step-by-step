@@ -1,0 +1,2660 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l20-disks/">
+      
+      
+        <link rel="next" href="../l22-files-api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L21 · RAID - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l21-raid" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L21 · RAID
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation axes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#small-writes-with-parity-the-subtractive-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Small writes with parity — the subtractive method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-table-figure-388-memorise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The table (Figure 38.8 — memorise)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation axes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#small-writes-with-parity-the-subtractive-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Small writes with parity — the subtractive method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-table-figure-388-memorise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The table (Figure 38.8 — memorise)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l21-raid">L21 · <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr><a class="headerlink" href="#l21-raid" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 38 (pp. 437–455) · <strong>Priority:</strong> 🔴 must-know · <strong>Time:</strong> 45 min · <strong>Simulator:</strong> <code>file-raid/raid.py</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr></strong> combines several disks so they look like one bigger, faster or safer disk.</p>
+<ul>
+<li><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0 (<abbr title="Spreading consecutive blocks across disks (RAID-0)">striping</abbr>):</strong> spread data across all disks, like <abbr title="Cutting a free chunk in two to satisfy a smaller request">splitting</abbr> a book's pages between 4 photocopiers. Fast, but lose one disk and the data is gone.</li>
+<li><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1 (<abbr title="Keeping identical copies on two disks (RAID-1)">mirroring</abbr>):</strong> keep two copies of everything. Safe, but you pay for twice the disks.</li>
+<li><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4/5 (<abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>):</strong> <abbr title="CPU instruction that writes a register's value to memory">store</abbr> a small "<abbr title="Small value computed from data to detect corruption">checksum</abbr> disk's worth" of extra data that can rebuild any <strong>one</strong> lost disk. Cheaper than <abbr title="Keeping identical copies on two disks (RAID-1)">mirroring</abbr>. <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5 spreads that extra data across all disks so no single disk becomes the bottleneck.</li>
+</ul>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr></strong> = many disks that look like one disk to the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr>, giving more <strong>capacity</strong>, <strong>performance</strong> and <strong>reliability</strong>, transparently.</li>
+<li><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0</strong> <abbr title="Spreading consecutive blocks across disks (RAID-0)">striping</abbr> (fast, no redundancy) · <strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1</strong> <abbr title="Keeping identical copies on two disks (RAID-1)">mirroring</abbr> (half capacity, survives a failure) · <strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4</strong> one <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> disk (<abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> disk bottlenecks small writes) · <strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5</strong> rotated <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> (fixes that).</li>
+<li>Small random writes with <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> cost <strong>4 I/Os</strong> (read old data, read old <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>, write both) — the <strong><abbr title="Parity RAID needs 4 I/Os per small write (read data and parity, write both)">small-write problem</abbr></strong>.</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How can we make a large, fast, reliable storage system out of many disks?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>One disk is small, slow, and fails</strong> → <em>stripe <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> across N disks (<abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0)</em> → ❌ any disk fails = data lost → <em>mirror every <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> (<abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1)</em> → ❌ pay 2× capacity → <em><abbr title="CPU instruction that writes a register's value to memory">store</abbr> <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> (<abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr>) on one extra disk (<abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4)</em> → ❌ every small write updates the <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> disk → it becomes the bottleneck → <em>rotate <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> across all disks (<abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5)</em> → small writes can proceed in parallel.</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="evaluation-axes">Evaluation axes<a class="headerlink" href="#evaluation-axes" title="Permanent link">&para;</a></h3>
+<p>Every <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr> level is judged on three things:</p>
+<ul>
+<li><strong>Capacity:</strong> how much of the total space can actually hold your data?</li>
+<li><strong>Reliability:</strong> how many disks can die without losing data? (The book assumes a disk either works perfectly or is completely dead — the <strong><abbr title="Failure model: a disk is either fully working or completely dead">fail-stop</abbr></strong> model.)</li>
+<li><strong>Performance:</strong> how fast are reads and writes, both sequential (long runs) and random (scattered small pieces)?</li>
+</ul>
+<p>Shorthand used in the formulas below: <strong>N</strong> = number of disks, <strong>B</strong> = <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> per disk, <strong>S</strong> = one disk's sequential speed (MB/s), <strong>R</strong> = one disk's random speed (MB/s, much smaller than S), <strong>T</strong> = time for one request on one disk.</p>
+<h3 id="layouts">Layouts<a class="headerlink" href="#layouts" title="Permanent link">&para;</a></h3>
+<p><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0</strong> (<abbr title="Spreading consecutive blocks across disks (RAID-0)">striping</abbr>, chunk = 1 <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>, 4 disks):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Disk 0</th>
+<th style="text-align: center;">Disk 1</th>
+<th style="text-align: center;">Disk 2</th>
+<th style="text-align: center;">Disk 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">7</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">9</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">11</td>
+</tr>
+</tbody>
+</table>
+<p><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5</strong> (rotated <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>, 5 disks — P<em>n</em> is the <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> of stripe <em>n</em>):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Disk 0</th>
+<th style="text-align: center;">Disk 1</th>
+<th style="text-align: center;">Disk 2</th>
+<th style="text-align: center;">Disk 3</th>
+<th style="text-align: center;">Disk 4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><strong>P0</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;"><strong>P1</strong></td>
+<td style="text-align: center;">4</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">11</td>
+<td style="text-align: center;"><strong>P2</strong></td>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">9</td>
+</tr>
+<tr>
+<td style="text-align: center;">15</td>
+<td style="text-align: center;"><strong>P3</strong></td>
+<td style="text-align: center;">12</td>
+<td style="text-align: center;">13</td>
+<td style="text-align: center;">14</td>
+</tr>
+</tbody>
+</table>
+<p><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4 is the same as <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5 except every <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> sits on one dedicated disk.</p>
+<ul>
+<li><strong>Where is <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> A in <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0?</strong> On disk number (A mod N) — the remainder of A ÷ N — at position (A ÷ N, rounded down). E.g. with 4 disks, <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> 9 is on disk 1, row 2. That matches the table above.</li>
+<li><strong>Chunk size</strong> (how many <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> go on one disk before moving to the next): small chunks spread even a single file across all disks (more parallelism), but every request has to wait for several disk arms. Big chunks mean fewer arm movements per request but less parallelism within one file.</li>
+<li><strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1</strong> (in practice usually <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-10: stripe across pairs of mirrored disks): a read can go to either copy, but a write must go to <strong>both</strong>. If power fails between the two writes, the copies disagree, so <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr> controllers keep a small log of in-progress writes (the same idea as <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> in <a href="../l25-journaling/">L25</a>).</li>
+<li><strong>Parity, explained:</strong> for each row of <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> (a <em>stripe</em>), the <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is the <strong><abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr></strong> of the data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>. <abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr> simply checks whether the number of 1s is odd. For example, for the bits 0, 1, 1, 0 there are two 1s (even), so the <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> is <strong>0</strong>. If one disk dies, you can recompute its missing bit: whatever value makes the count come out right again. Do this for every bit and the whole lost <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is rebuilt from the survivors.</li>
+</ul>
+<h3 id="small-writes-with-parity-the-subtractive-method">Small writes with <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> — the subtractive method<a class="headerlink" href="#small-writes-with-parity-the-subtractive-method" title="Permanent link">&para;</a></h3>
+<p>Changing one data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> means the <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> of its stripe must change too. Instead of reading the whole stripe, there's a shortcut:</p>
+<div class="highlight"><pre><span></span><code>P_new = (C_old XOR C_new) XOR P_old
+</code></pre></div>
+<p>In words: the new <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> = old <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>, with exactly the bits that changed in the data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> flipped. That takes <strong>2 reads</strong> (old data, old <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>) and <strong>2 writes</strong> (new data, new <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>) = <strong>4 disk operations</strong> for a single small write. This is the <strong><abbr title="Parity RAID needs 4 I/Os per small write (read data and parity, write both)">small-write problem</abbr></strong>.</p>
+<ul>
+<li>In <strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4</strong>, every small write, to any disk, also has to update the <strong>one</strong> <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> disk. That disk becomes a traffic jam: the whole array manages only about <strong>R/2</strong> for random writes, no matter how many disks it has.</li>
+<li>In <strong><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5</strong>, <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> is spread across all disks, so different small writes can usually proceed at the same time: about <strong>N/4 · R</strong> (N disks, ÷4 because each write costs 4 operations).</li>
+</ul>
+<h3 id="the-table-figure-388-memorise">The table (Figure 38.8 — memorise)<a class="headerlink" href="#the-table-figure-388-memorise" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0</th>
+<th><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1</th>
+<th><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4</th>
+<th><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capacity</td>
+<td>N·B</td>
+<td>N·B/2</td>
+<td>(N−1)·B</td>
+<td>(N−1)·B</td>
+</tr>
+<tr>
+<td>Reliability (failures survived)</td>
+<td>0</td>
+<td>1 for sure (N/2 if lucky)</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Seq read</td>
+<td>N·S</td>
+<td>N/2·S</td>
+<td>(N−1)·S</td>
+<td>(N−1)·S</td>
+</tr>
+<tr>
+<td>Seq write</td>
+<td>N·S</td>
+<td>N/2·S</td>
+<td>(N−1)·S</td>
+<td>(N−1)·S</td>
+</tr>
+<tr>
+<td>Random read</td>
+<td>N·R</td>
+<td>N·R</td>
+<td>(N−1)·R</td>
+<td>N·R</td>
+</tr>
+<tr>
+<td>Random write</td>
+<td>N·R</td>
+<td>N/2·R</td>
+<td><strong>R/2</strong></td>
+<td><strong>N/4·R</strong></td>
+</tr>
+<tr>
+<td>Write latency</td>
+<td>T</td>
+<td>T</td>
+<td>2T</td>
+<td>2T</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Which to use?</strong> Performance only → <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0. Random-I/O performance + reliability → <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1. Capacity + reliability → <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5. <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4 is basically obsolete; <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5 replaces it.</p>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1 sequential read is <strong>N/2·S</strong>, not N·S: each disk skips the <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> its mirror is reading, so it only delivers half its bandwidth.</li>
+<li>Full-stripe writes in <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4/5 avoid the small-write penalty (compute <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> from the new data).</li>
+<li><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr> handles <strong><abbr title="Failure model: a disk is either fully working or completely dead">fail-stop</abbr></strong> failures; <abbr title="The disk returns wrong data without reporting an error">silent corruption</abbr> is a different problem (<a href="../l26-lfs-integrity/">L26</a>).</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: the chain; draw <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0 and <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5 layouts; the subtractive <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> formula; the full table.</p>
+<details>
+<summary>What does RAID-0 provide and not provide?</summary>
+<p>Striping for full capacity and performance; no redundancy (any failure loses data).</p>
+</details>
+<details>
+<summary>How does parity let RAID-4/5 recover a failed disk?</summary>
+<p>Parity is the <abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr> of the stripe's data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>; <abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr>-ing the surviving <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> and <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> reconstructs the missing one.</p>
+</details>
+<details>
+<summary>How many I/Os does a small write need in RAID-4/5, and why?</summary>
+<p>Four: read old data and old <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>, write new data and new <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> (subtractive <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>).</p>
+</details>
+<details>
+<summary>Why is RAID-4 slow for small random writes?</summary>
+<p>Every write must update the single <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> disk, which serializes all writes (total R/2).</p>
+</details>
+<details>
+<summary>How does RAID-5 fix RAID-4's problem?</summary>
+<p>It rotates <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> across all disks, so small writes to different stripes can proceed in parallel (N/4·R).</p>
+</details>
+<details>
+<summary>Why is RAID-1's sequential read only N/2·S?</summary>
+<p>Each disk serves every other <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>; it rotates past <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> its mirror is serving, so it delivers only half its bandwidth.</p>
+</details>
+<details>
+<summary>Capacity of RAID-1, RAID-4, RAID-5 with N disks of B blocks?</summary>
+<p><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1: N·B/2. <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4 and <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5: (N−1)·B.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "You're building storage for a database with lots of small random writes. <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1 or <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5, and why?"</p>
+<p><strong>Simulator drill</strong> (book's free Python homework tools — see <a href="../../start/recall-system/#four-more-tricks-that-pay-off">the recall system</a>): <code>python3 raid.py -L 5 -R 20 -n 5 -W rand -w 100 -c</code> — then compare <code>-L 4</code> and <code>-L 1</code>. Use <code>-t</code> for timing.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Disk numbers S and R → <a href="../l20-disks/">L20</a></li>
+<li>Consistent updates in <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1 → the same problem as <a href="../l25-journaling/">L25 Journaling</a></li>
+<li>Silent errors and <abbr title="Small values computed from data to detect corruption">checksums</abbr> → <a href="../l26-lfs-integrity/">L26</a></li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 38.1–38.7 and the comparison table (38.8).</li>
+<li>⚪ 38.9 other <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr> issues.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l20-disks/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L20 · Hard disks &amp; SSDs">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L20 · Hard disks & SSDs
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../l22-files-api/" class="md-footer__link md-footer__link--next" aria-label="Next: L22 · Files &amp; directories">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                L22 · Files & directories
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

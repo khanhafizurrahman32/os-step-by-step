@@ -1,0 +1,2554 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l04-scheduling/">
+      
+      
+        <link rel="next" href="../l06-address-space/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L05 · MLFQ, lottery, multi-CPU - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l05-mlfq-lottery-multiprocessor-scheduling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L05 · MLFQ, lottery, multi-CPU
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../persistence/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-five-rules-memorise-these-exactly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The five rules (memorise these exactly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proportional-share-ch-9-the-short-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proportional share (Ch 9) — the short version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiprocessor-scheduling-ch-10-the-short-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiprocessor scheduling (Ch 10) — the short version
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../persistence/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-five-rules-memorise-these-exactly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The five rules (memorise these exactly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proportional-share-ch-9-the-short-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proportional share (Ch 9) — the short version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiprocessor-scheduling-ch-10-the-short-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiprocessor scheduling (Ch 10) — the short version
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l05-mlfq-lottery-multiprocessor-scheduling">L05 · <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr>, lottery &amp; multiprocessor scheduling<a class="headerlink" href="#l05-mlfq-lottery-multiprocessor-scheduling" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 8 (pp. 75–86) 🔴 · Ch 9 (pp. 87–96) 🟡 · Ch 10 (pp. 97–108) 🟡 · <strong>Time:</strong> 50 min · <strong>Simulators:</strong> <code>cpu-sched-mlfq/mlfq.py</code>, <code>cpu-sched-lottery/lottery.py</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p>A doctor's waiting room with no appointment times. The receptionist doesn't know who needs 2 minutes and who needs an hour, so she <strong>watches and learns</strong>:</p>
+<ul>
+<li>Everyone new starts in the "quick" line.</li>
+<li>If you keep the doctor busy for a long time, you're moved to a slower line.</li>
+<li>Every so often, everyone is moved back to the quick line, so nobody waits forever and people whose needs changed get another chance.</li>
+<li>She counts your <strong>total</strong> time with the doctor, so you can't cheat by stepping out briefly and coming back.</li>
+</ul>
+<p>That is <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr>. <strong>Lottery scheduling</strong> is the raffle version: hold 75% of the tickets and you win about 75% of the CPU time.</p>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr></strong> learns a job's behaviour from history: jobs that use their whole <abbr title="How long a job runs before the scheduler may switch (a multiple of the timer interrupt period)">time slice</abbr> drift down to low priority (CPU-bound), jobs that give up the CPU early stay high (interactive).</li>
+<li>Two fixes make it safe: <strong><abbr title="MLFQ rule 5 — periodically move every job to the top queue to stop starvation">priority boost</abbr></strong> (stop <abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr>) and <strong>better accounting</strong> of total time used at a level (stop gaming).</li>
+<li><strong>Lottery/stride</strong> give each job a proportional share using tickets. <strong>Multi-CPU</strong> scheduling adds <abbr title="A process runs faster on the CPU it last ran on, because that CPU's cache is still warm">cache affinity</abbr> and <abbr title="CPU instruction that reads a value from memory into a register">load</abbr> balancing.</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How can a scheduler minimise turnaround <em>and</em> <abbr title="Time a job first runs minus its arrival time">response time</abbr> without knowing how long jobs run?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Don't know job lengths</strong> → <em>several queues with different priorities; learn from behaviour</em> → <em>new jobs start at the top; drop a job down when it uses a full slice</em> → ❌ <strong><abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr></strong>: many interactive jobs keep long jobs from ever running; also a job can change from CPU-bound to interactive and be stuck low → <em>Rule 5: periodically boost everyone to the top</em> → ❌ <strong>gaming</strong>: a job yields just before its slice ends and stays on top forever → <em>Rule 4 rewritten: count total time used at a level, regardless of how many times it yields</em> → <strong>final <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr></strong>.</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<p><abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr> keeps several queues, each with a <strong>priority</strong> level. Jobs in a higher queue always run before jobs in a lower one. The clever part is that a job's priority isn't fixed: the scheduler moves jobs between queues based on <strong>how they behaved so far</strong>.</p>
+<ul>
+<li>A job that keeps using its full slice is probably a long, <strong>CPU-bound</strong> job (e.g. a video export), so it moves down.</li>
+<li>A job that keeps giving up the CPU early, because it's waiting for keyboard or disk, is probably <strong>interactive</strong> (e.g. a text editor), so it stays high and feels snappy.</li>
+</ul>
+<h3 id="the-five-rules-memorise-these-exactly">The five rules (memorise these exactly)<a class="headerlink" href="#the-five-rules-memorise-these-exactly" title="Permanent link">&para;</a></h3>
+<ol>
+<li>If Priority(A) &gt; Priority(B), <strong>A runs</strong>.</li>
+<li>If Priority(A) = Priority(B), A and B run in <strong>round robin</strong>.</li>
+<li>A new job starts at the <strong>highest</strong> priority.</li>
+<li>Once a job uses up its <strong>time <abbr title="In MLFQ, how much CPU time a job may use at one priority level before it is demoted">allotment</abbr></strong> at a level (no matter how many times it gave up the CPU), its priority is <strong>reduced</strong>.</li>
+<li>After some period <strong>S</strong>, move <strong>all</strong> jobs to the topmost queue.</li>
+</ol>
+<pre class="mermaid"><code>flowchart TB
+    N[New job] --&gt; Q2
+    Q2["Q2 — highest · short slice (e.g. 10 ms)"] -- used allotment --&gt; Q1
+    Q1["Q1 · medium slice"] -- used allotment --&gt; Q0
+    Q0["Q0 — lowest · long slice (e.g. 100+ ms)"]
+    Q0 -. every S ms: boost .-&gt; Q2
+    Q1 -. every S ms: boost .-&gt; Q2</code></pre>
+<p><strong>What each rule is for:</strong></p>
+<ul>
+<li>Rules 1–2: the basic "higher priority first, take turns at the same level".</li>
+<li>Rule 3: assume every new job might be short and interactive. If it is, it finishes quickly; if not, it sinks.</li>
+<li>Rule 4: sinking. Its "no matter how many times" wording stops cheating (see the worked example).</li>
+<li>Rule 5: the <strong>boost</strong>. Without it, a steady stream of interactive jobs could keep long jobs from <em>ever</em> running (<strong><abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr></strong>).</li>
+</ul>
+<p><strong>Tuning:</strong> high queues get <strong>short</strong> slices (interactive jobs switch quickly), low queues get <strong>long</strong> slices (CPU-bound jobs waste less time switching). How often to boost (S) has no perfect value: too rarely and long jobs starve, too often and interactive jobs lose their advantage. Real systems tune it by experiment (Solaris uses a configurable table; FreeBSD computes priority from recent CPU use).</p>
+<h3 id="proportional-share-ch-9-the-short-version">Proportional share (Ch 9) — the short version<a class="headerlink" href="#proportional-share-ch-9-the-short-version" title="Permanent link">&para;</a></h3>
+<p>A different goal: instead of fast turnaround or response, give each job a <strong>guaranteed share</strong> of the CPU (e.g. "A gets 75%, B gets 25%").</p>
+<ul>
+<li><strong>Lottery scheduling:</strong> each job holds <strong>tickets</strong> (A has 75, B has 25). Every <abbr title="How long a job runs before the scheduler may switch (a multiple of the timer interrupt period)">time slice</abbr>, draw a random ticket number; whoever holds it runs. Over many draws A wins about 75% of the time. It's simple, but only fair <strong>on average</strong>: over a short period, B might get lucky or unlucky.</li>
+<li><strong>Ticket tricks:</strong> a user can split their tickets among their own jobs (<strong>currency</strong>); a job waiting on a server can lend its tickets to that server (<strong>transfer</strong>); a trusted job can temporarily give itself more (<strong>inflation</strong>).</li>
+<li><strong>Stride scheduling:</strong> the non-random version. Each job has a <em>stride</em> = (a big number) ÷ (its tickets), so more tickets = smaller stride. Keep a running total (<em>pass</em>) per job. Always run the job with the <strong>lowest pass</strong>, then add its stride to its pass. Jobs with small strides get picked more often, in exact proportion. Downside: when a new job joins, what pass should it start with? (Lottery has no such problem.)</li>
+<li><strong>Linux <abbr title="Completely Fair Scheduler (Linux) — runs the process with the lowest virtual runtime">CFS</abbr></strong> (not in v0.90 of the book — later editions add it; worth knowing for interviews): counts how much CPU each process has had, its <strong>virtual runtime</strong>, and always runs the process that has had the <strong>least</strong>. Processes are kept in a sorted tree (a <abbr title="A self-balancing binary search tree; lookups, inserts and deletes take O(log n)">red-black tree</abbr>) so finding the smallest is fast. <strong>Nice</strong> values (priorities) make <abbr title="Virtual runtime in Linux CFS — CPU time used, weighted by priority (nice value)">vruntime</abbr> grow slower for important processes. A target period (<code>sched_latency</code>, e.g. 48 ms) is shared among runnable processes, with a minimum slice (<code>min_granularity</code>, e.g. 6 ms).</li>
+</ul>
+<h3 id="multiprocessor-scheduling-ch-10-the-short-version">Multiprocessor scheduling (Ch 10) — the short version<a class="headerlink" href="#multiprocessor-scheduling-ch-10-the-short-version" title="Permanent link">&para;</a></h3>
+<p>With several CPUs (cores), new issues appear:</p>
+<ul>
+<li>Each CPU has its own <strong><abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr></strong>. Hardware keeps the caches in agreement with each other (<strong><abbr title="Hardware that keeps multiple CPU caches consistent with each other">cache coherence</abbr></strong>), but code that shares data still needs locks.</li>
+<li><strong>Cache affinity:</strong> a process runs faster if it goes back to the <strong>same CPU</strong> as last time, because that CPU's <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> still holds its data.</li>
+<li><strong>Single-queue (<abbr title="Single-queue multiprocessor scheduling — one shared run queue for all CPUs">SQMS</abbr>):</strong> one shared list of jobs for all CPUs. Simple and balanced, but every CPU fights over that one list's lock, and jobs hop between CPUs (losing their warm <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>).</li>
+<li><strong>Multi-queue (<abbr title="Multi-queue multiprocessor scheduling — one run queue per CPU">MQMS</abbr>):</strong> one list per CPU. Scales well and keeps jobs on their CPU, but one CPU can end up busy while another sits idle (<strong><abbr title="CPU instruction that reads a value from memory into a register">load</abbr> imbalance</strong>). Fix: <strong><abbr title="An idle CPU takes jobs from another CPU's queue to balance load">work stealing</abbr></strong>, where an idle CPU takes jobs from a busy CPU's list.</li>
+<li>Linux's O(1) and <abbr title="Completely Fair Scheduler (Linux) — runs the process with the lowest virtual runtime">CFS</abbr> schedulers are multi-queue; BFS was single-queue.</li>
+</ul>
+<h2 id="worked-example">Worked example<a class="headerlink" href="#worked-example" title="Permanent link">&para;</a></h2>
+<p>Two jobs: <strong>A</strong> is CPU-bound (it would happily run for seconds); <strong>B</strong> is interactive (runs 1 ms, then waits for the keyboard). Three queues, Q2 = top, 10 ms slices.</p>
+<ul>
+<li>A starts in Q2, uses its full 10 ms → drops to Q1 → uses another full 10 ms → drops to Q0 and stays there.</li>
+<li>B arrives, starts in Q2, runs 1 ms, then waits for input. When it comes back it's still in Q2, because it hasn't used up its <abbr title="In MLFQ, how much CPU time a job may use at one priority level before it is demoted">allotment</abbr>. So B always runs ahead of A: fast response. A runs whenever B is waiting.</li>
+<li><strong>Cheating ("gaming the scheduler"):</strong> suppose A is crafty. It runs 9.9 ms, then does a pointless tiny I/O just before its slice ends, so it never "uses a full slice". Under the book's first draft of Rule 4 (<em>drop only if you use the whole slice</em>), A would stay in Q2 forever and hog the CPU. The final Rule 4 counts <strong>total</strong> time at a level (9.9 + 9.9 + … ms), so A still drops once it reaches 10 ms.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The old rules 4a/4b (drop if slice used, stay if you yield) are <strong>replaced</strong> by the new Rule 4 — know both and why.</li>
+<li>Boost (Rule 5) solves <strong>two</strong> problems: <abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr> and jobs that change behaviour.</li>
+<li>Lottery is <strong>probabilistically</strong> fair; short jobs may get unlucky.</li>
+<li>Stride needs global state; lottery doesn't.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: write all five <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr> rules, then the two problems each fix (<abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr>, gaming).</p>
+<details>
+<summary>What is MLFQ's key idea?</summary>
+<p>Use several priority queues and adjust a job's priority based on its observed behaviour, so it approximates <abbr title="Shortest Job First — run the shortest job next; non-preemptive">SJF</abbr> without knowing job lengths.</p>
+</details>
+<details>
+<summary>Which MLFQ rule prevents starvation, and what else does it fix?</summary>
+<p>Rule 5 (periodic <abbr title="MLFQ rule 5 — periodically move every job to the top queue to stop starvation">priority boost</abbr>). It also lets a job that became interactive get back to high priority.</p>
+</details>
+<details>
+<summary>How could a program game the original MLFQ, and what fixes it?</summary>
+<p>Issue an I/O just before its slice ends to stay at high priority. Fixed by accounting for total time used at a level (new Rule 4).</p>
+</details>
+<details>
+<summary>Why do higher MLFQ queues get shorter time slices?</summary>
+<p>They hold interactive jobs that need fast switching; lower queues hold CPU-bound jobs that benefit from long slices with less switching.</p>
+</details>
+<details>
+<summary>Lottery vs stride scheduling?</summary>
+<p>Lottery picks a random ticket each slice — simple, no global state, fair on average. Stride is deterministic (run lowest pass, add stride) — exactly fair but needs global state.</p>
+</details>
+<details>
+<summary>How does Linux CFS pick the next process?</summary>
+<p>The one with the lowest virtual runtime, stored in a <abbr title="A self-balancing binary search tree; lookups, inserts and deletes take O(log n)">red-black tree</abbr>; nice values weight how fast <abbr title="Virtual runtime in Linux CFS — CPU time used, weighted by priority (nice value)">vruntime</abbr> grows.</p>
+</details>
+<details>
+<summary>Single-queue vs multi-queue multiprocessor scheduling?</summary>
+<p>Single-queue: simple, balanced, but lock contention and poor <abbr title="A process runs faster on the CPU it last ran on, because that CPU's cache is still warm">cache affinity</abbr>. Multi-queue: scalable and affinity-friendly, but needs migration/<abbr title="An idle CPU takes jobs from another CPU's queue to balance load">work stealing</abbr> to fix <abbr title="CPU instruction that reads a value from memory into a register">load</abbr> imbalance.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "How does <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr> figure out which jobs are interactive, and how do you stop a clever program from cheating?"</p>
+<p><strong>Simulator drill</strong> (book's free Python homework tools — see <a href="../../start/recall-system/#four-more-tricks-that-pay-off">the recall system</a>): <code>python3 mlfq.py -n 3 -q 10 -l 0,50,0:0,20,5 -c</code> — trace which queue each job is in over time. Then try <code>-B 50</code> to see boosting.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Basic policies → <a href="../l04-scheduling/">L04</a></li>
+<li>Cache coherence and locks → <a href="../../concurrency/l14-locks/">L14 Locks</a></li>
+<li>Red-black trees and <abbr title="Virtual runtime in Linux CFS — CPU time used, weighted by priority (nice value)">vruntime</abbr> appear again in <a href="../../concurrency/l15-concurrent-ds/">L15</a> style structures</li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 Ch 8 entirely — short and very examinable. Summary box 8.6 lists the rules.</li>
+<li>🟡 Ch 9: 9.1–9.2 (tickets, mechanisms) and 9.6 (stride). Newer editions add a <abbr title="Completely Fair Scheduler (Linux) — runs the process with the lowest virtual runtime">CFS</abbr> section — read it if yours has one.</li>
+<li>🟡 Ch 10: 10.3–10.5 (affinity, <abbr title="Single-queue multiprocessor scheduling — one shared run queue for all CPUs">SQMS</abbr>, <abbr title="Multi-queue multiprocessor scheduling — one run queue per CPU">MQMS</abbr>). Skip the hardware background if you know caches.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l04-scheduling/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L04 · Scheduling basics">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L04 · Scheduling basics
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../l06-address-space/" class="md-footer__link md-footer__link--next" aria-label="Next: L06 · Address spaces &amp; malloc">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                L06 · Address spaces & malloc
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

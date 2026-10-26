@@ -1,0 +1,2644 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l24-ffs/">
+      
+      
+        <link rel="next" href="../l26-lfs-integrity/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L25 · Crash consistency - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l25-crash-consistency-fsck-journaling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L25 · Crash consistency
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-can-go-wrong-adding-one-block-to-a-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What can go wrong (adding one block to a file)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fsck-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fsck checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-journaling-the-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data journaling — the protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-ordered-journaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata (ordered) journaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-can-go-wrong-adding-one-block-to-a-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What can go wrong (adding one block to a file)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fsck-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fsck checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-journaling-the-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data journaling — the protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-ordered-journaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata (ordered) journaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l25-crash-consistency-fsck-journaling">L25 · Crash consistency: <abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr> &amp; <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr><a class="headerlink" href="#l25-crash-consistency-fsck-journaling" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 42 (pp. 507–526) · <strong>Priority:</strong> 🔴 must-know · <strong>Time:</strong> 55 min · <strong>Simulator:</strong> <code>file-journaling/fsck.py</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p>Saving a file involves several separate disk writes: the data, the file's card (<abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>) and the free-space checklist (<abbr title="One bit per inode or block: free or in use">bitmap</abbr>). If the power dies <strong>between</strong> them, the disk is left in a muddle, e.g. a card pointing at garbage.</p>
+<ul>
+<li><strong><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr>:</strong> after a crash, inspect the whole disk and fix it. That's like re-checking every shelf in a library, and takes hours on big disks.</li>
+<li><strong>Journaling:</strong> before changing anything, first write a note in a <strong><abbr title="The on-disk log used by journaling">journal</abbr></strong> ("I'm about to do X, Y, Z"), then a "done writing the note" mark, <em>then</em> do the real writes. After a crash, just replay the finished notes. It works like a shopping list you tick off: even if you're interrupted, you know exactly what's left.</li>
+</ul>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Appending one <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> needs <strong>three writes</strong>: <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, <abbr title="One bit per data block: free or in use">data bitmap</abbr>, data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>. A crash between them leaves the disk <strong>inconsistent</strong> (leaks, garbage, or <abbr title="Variables that hold memory addresses">pointers</abbr> to freed <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>).</li>
+<li><strong><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr></strong> scans the whole disk after a crash and repairs <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> — correct-ish but <strong>far too slow</strong> for big disks.</li>
+<li><strong>Journaling (<abbr title="Record what you're about to do in a log before doing it">write-ahead logging</abbr>):</strong> first write what you're about to do to a <strong>log</strong>, then <strong>commit</strong>, then write it in place (<strong><abbr title="Writing journaled updates to their final on-disk locations">checkpoint</abbr></strong>). On recovery, <strong>replay</strong> committed transactions. <strong>Metadata (ordered) <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr></strong> — write data first, <abbr title="The on-disk log used by journaling">journal</abbr> only <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> — is the common default (ext3/ext4).</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How do we update persistent data structures despite the possibility of a crash or power loss at any moment?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Three writes, crash in between</strong> → <em><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr>: check everything on reboot</em> → ❌ time grows with disk size (hours) and it can't know if data is right, only if it's consistent → <em><abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr>: write intent to a log first</em> → <em>write <abbr title="Transaction begin block in the journal">TxB</abbr> + <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> + data + <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> together</em> → ❌ the disk may reorder writes; <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> could land before the data → garbage replayed → <em>write <abbr title="Transaction begin block in the journal">TxB</abbr> + contents, wait, then write <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> (512 B → <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>)</em> → ❌ data written twice = half bandwidth → <em><abbr title="Journal only metadata; write data in place first (ordered mode)">metadata journaling</abbr>: data in place first, then <abbr title="The on-disk log used by journaling">journal</abbr> <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr></em> → ❌ <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> reuse bug (deleted directory <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> reused for a file, replay overwrites it) → <em>revoke records</em> → <strong>ordered <abbr title="Journal only metadata; write data in place first (ordered mode)">metadata journaling</abbr></strong>. Alternatives: <abbr title="Ordering all writes carefully so the disk is never inconsistent">soft updates</abbr>, <abbr title="Share pages read-only (e.g. after fork) and copy one only when it's written">copy-on-write</abbr> (ZFS, btrfs, <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr>), backpointer-based consistency, optimistic <abbr title="Keeping on-disk structures consistent despite crashes mid-update">crash consistency</abbr>.</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="what-can-go-wrong-adding-one-block-to-a-file">What can go wrong (adding one <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> to a file)<a class="headerlink" href="#what-can-go-wrong-adding-one-block-to-a-file" title="Permanent link">&para;</a></h3>
+<p>Adding one <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> of data to a file needs <strong>three</strong> separate disk writes:</p>
+<ol>
+<li>the <strong>data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr></strong> itself;</li>
+<li>the file's <strong><abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr></strong> (to record the new <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> and the bigger size);</li>
+<li>the <strong><abbr title="One bit per data block: free or in use">data bitmap</abbr></strong> (to mark the <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> as used).</li>
+</ol>
+<p>The disk does them one at a time. Here's what the disk looks like if the power dies after only some of them:</p>
+<table>
+<thead>
+<tr>
+<th>What made it to disk</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Only the data</td>
+<td>The file system is fine; the new data is simply lost</td>
+</tr>
+<tr>
+<td>Only the <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr></td>
+<td>The <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> points to a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> holding old <strong>garbage</strong>, and the <abbr title="One bit per inode or block: free or in use">bitmap</abbr> says that <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is free, so it could be given to another file</td>
+</tr>
+<tr>
+<td>Only the <abbr title="One bit per inode or block: free or in use">bitmap</abbr></td>
+<td>A <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is marked used but nothing uses it: wasted space (a <strong>space leak</strong>)</td>
+</tr>
+<tr>
+<td>Inode + <abbr title="One bit per inode or block: free or in use">bitmap</abbr></td>
+<td>The structures agree, but the file now contains <strong>garbage</strong> where the new data should be</td>
+</tr>
+<tr>
+<td>Inode + data</td>
+<td>The file looks right, but the <abbr title="One bit per inode or block: free or in use">bitmap</abbr> says the <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is free, so it may be handed out again and overwritten</td>
+</tr>
+<tr>
+<td>Bitmap + data</td>
+<td>The <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is used but no file points to it: a space leak</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fsck-checks"><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr> checks<a class="headerlink" href="#fsck-checks" title="Permanent link">&para;</a></h3>
+<p><strong><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr></strong> (file system check) runs after a crash and checks everything for consistency: Does the <abbr title="Block describing the whole file system: sizes, where structures start, magic number">superblock</abbr> look sane? Do the bitmaps match what the <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> actually use? Does each file's link count match the number of directory entries pointing to it (this means walking the <em>entire</em> directory tree)? Do two files claim the same <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>? Does every directory have proper <code>.</code> and <code>..</code> entries? Files that no directory points to are put in a folder called <code>lost+found</code>.</p>
+<p>It works, but it reads the <strong>whole disk</strong>, which takes hours on a big one. And it can only make things <em>consistent</em>: it can't know whether the data is the <em>right</em> data.</p>
+<h3 id="data-journaling-the-protocol">Data <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> — the protocol<a class="headerlink" href="#data-journaling-the-protocol" title="Permanent link">&para;</a></h3>
+<p>The idea (called <strong><abbr title="Record what you're about to do in a log before doing it">write-ahead logging</abbr></strong>): before changing anything in place, first write a description of <strong>all</strong> the changes to a reserved area of the disk, the <strong><abbr title="The on-disk log used by journaling">journal</abbr></strong>. A group of changes that belong together is a <strong>transaction</strong>. It's marked with a begin <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> (<strong><abbr title="Transaction begin block in the journal">TxB</abbr></strong>) and an end <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> (<strong><abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr></strong>, the "commit").</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant FS
+    participant J as Journal
+    participant D as Final locations
+    FS-&gt;&gt;J: 1. Journal write: TxB, inode, bitmap, data
+    Note over FS,J: wait for completion
+    FS-&gt;&gt;J: 2. Journal commit: TxE (one 512-B sector → atomic)
+    Note over FS,J: transaction is now committed
+    FS-&gt;&gt;D: 3. Checkpoint: write inode, bitmap, data in place
+    FS-&gt;&gt;J: 4. Free: mark transaction free in journal superblock</code></pre>
+<p><strong>Why the waits matter:</strong> the disk may reorder writes for speed. If <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> were sent together with the rest, it could reach the disk <em>before</em> the data it vouches for. A crash at that moment would leave a "complete-looking" transaction full of garbage. So: write everything else, <strong>wait</strong> until it's on disk, <em>then</em> write <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr>. <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> fits in one 512-byte <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr>, and single-<abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr> writes are all-or-nothing, so the commit either happened or it didn't.</p>
+<p><strong>Recovery after a crash:</strong> read the <abbr title="The on-disk log used by journaling">journal</abbr>. Every transaction that has its <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> is complete, so <strong>replay</strong> it (write its <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> to their real places again). Transactions without a <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> never committed, so ignore them; the real data was never touched. Replaying a transaction twice does no harm, since it writes the same <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> with the same contents.</p>
+<p><strong>Batching:</strong> the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> doesn't <abbr title="The on-disk log used by journaling">journal</abbr> every tiny change separately. It gathers many updates into one big transaction in memory and writes it every few seconds.</p>
+<p><strong>The <abbr title="The on-disk log used by journaling">journal</abbr> has a fixed size:</strong> once a transaction has been checkpointed, its space can be reused. The <abbr title="The on-disk log used by journaling">journal</abbr> is used round and round like a ring (<strong>circular buffer</strong>), and a small header (the <abbr title="The on-disk log used by journaling">journal</abbr> <abbr title="Block describing the whole file system: sizes, where structures start, magic number">superblock</abbr>) records which transactions are still pending.</p>
+<h3 id="metadata-ordered-journaling">Metadata (ordered) <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr><a class="headerlink" href="#metadata-ordered-journaling" title="Permanent link">&para;</a></h3>
+<p>Data <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> writes every data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> <strong>twice</strong> (once in the <abbr title="The on-disk log used by journaling">journal</abbr>, once in place), which halves write speed. Most systems instead <abbr title="The on-disk log used by journaling">journal</abbr> only the <strong><abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr></strong> (<abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr>, bitmaps: the file system's own bookkeeping) and write the user's data straight to its final place, but <em>first</em>:</p>
+<p><div class="highlight"><pre><span></span><code>1. Data write:      write data to final location         (wait)*
+2. Journal write:   TxB + metadata (inode, bitmap)       (wait)
+3. Journal commit:  TxE                                  (wait)
+4. Checkpoint:      write metadata in place
+5. Free
+</code></pre></div>
+*Steps 1 and 2 can be sent together, but <strong>both must finish before step 3</strong>.</p>
+<p>Why write the data first? If the <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (which <em>points to</em> the data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>) committed first and the crash came before the data was written, the file would point at garbage. The general rule: <strong>write the thing being pointed to before the thing that points to it.</strong></p>
+<ul>
+<li><strong>Writeback mode</strong> (no ordering at all) is faster but allows exactly that garbage-pointing case.</li>
+<li><strong>Revoke records:</strong> a subtle case where a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is freed and reused for something else. A revoke entry in the <abbr title="The on-disk log used by journaling">journal</abbr> tells recovery "don't replay the old version of this <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>".</li>
+<li><strong>Speed trick (ext4):</strong> <abbr title="CPU instruction that writes a register's value to memory">store</abbr> a <strong><abbr title="Small value computed from data to detect corruption">checksum</abbr></strong> of the transaction in <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr>, so everything can be written in one go without waiting. If the <abbr title="Small value computed from data to detect corruption">checksum</abbr> doesn't match at recovery, the transaction is treated as incomplete.</li>
+</ul>
+<h3 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Recovery time</th>
+<th>Normal-path cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr></td>
+<td>Grows with disk size — hours</td>
+<td>None</td>
+<td>Only fixes the structures, not the data</td>
+</tr>
+<tr>
+<td>Data <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr></td>
+<td>Grows only with <abbr title="The on-disk log used by journaling">journal</abbr> size — seconds</td>
+<td>All data written <strong>twice</strong></td>
+<td>Strongest guarantee</td>
+</tr>
+<tr>
+<td>Ordered <abbr title="Journal only metadata; write data in place first (ordered mode)">metadata journaling</abbr></td>
+<td>Seconds</td>
+<td>Only <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> written twice</td>
+<td>The default in Linux ext3/ext4</td>
+</tr>
+<tr>
+<td>Copy-on-write (ZFS, btrfs, <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr>)</td>
+<td>Fast</td>
+<td>Never overwrites anything in place, so there's nothing half-changed to fix</td>
+<td>See <a href="../l26-lfs-integrity/">L26</a></td>
+</tr>
+<tr>
+<td>Soft updates</td>
+<td>Fast</td>
+<td>Orders every write very carefully so the disk is always consistent</td>
+<td>Very complex to implement</td>
+</tr>
+</tbody>
+</table>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Journaling guarantees <strong>consistency</strong>, not that your last writes survive. Use <code>fsync</code>.</li>
+<li><abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> must be written <strong>after</strong> the rest of the transaction completes (or use <abbr title="Small values computed from data to detect corruption">checksums</abbr>).</li>
+<li>In ordered mode, data goes <strong>before</strong> the <abbr title="The on-disk log used by journaling">journal</abbr> commit — not after.</li>
+<li><abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr> is "consistent" not "correct": it can't tell whether the data in a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is the right data.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: the six crash scenarios (at least four); the data-<abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> 4 steps; <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr>-<abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> 5 steps with the ordering rule.</p>
+<details>
+<summary>Which three blocks must be written to append one data block?</summary>
+<p>The <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, the <abbr title="One bit per data block: free or in use">data bitmap</abbr>, and the data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>.</p>
+</details>
+<details>
+<summary>What's the main drawback of fsck?</summary>
+<p>It scans the entire disk, so recovery takes time proportional to disk size — far too slow for large disks.</p>
+</details>
+<details>
+<summary>List the steps of data journaling.</summary>
+<p>Journal write (<abbr title="Transaction begin block in the journal">TxB</abbr> + contents), <abbr title="The on-disk log used by journaling">journal</abbr> commit (<abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr>), <abbr title="Writing journaled updates to their final on-disk locations">checkpoint</abbr> (write in place), free the <abbr title="The on-disk log used by journaling">journal</abbr> space.</p>
+</details>
+<details>
+<summary>Why must TxE be written separately, after the rest?</summary>
+<p>The disk can reorder writes; if <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> lands first and the crash hits, recovery could replay garbage. <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> fits in one <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr>, so its write is <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>.</p>
+</details>
+<details>
+<summary>What does recovery do with the journal?</summary>
+<p>Replays (redoes) every committed transaction — those with a <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> — and ignores incomplete ones.</p>
+</details>
+<details>
+<summary>In ordered metadata journaling, when is user data written?</summary>
+<p>To its final location before the <abbr title="The on-disk log used by journaling">journal</abbr> commit, so <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> never points to garbage.</p>
+</details>
+<details>
+<summary>What rule underlies crash-consistent write ordering?</summary>
+<p>Write the pointed-to object before the object that points to it.</p>
+</details>
+<details>
+<summary>Why do metadata journaling instead of data journaling?</summary>
+<p>Data <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> writes all data twice, halving write bandwidth; <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> is small.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "Your laptop loses power while saving a file. Explain how ext4 makes sure the file system isn't corrupted when it boots."</p>
+<p><strong>Simulator drill</strong> (book's free Python homework tools — see <a href="../../start/recall-system/#four-more-tricks-that-pay-off">the recall system</a>): <code>python3 fsck.py -D</code> to see a clean FS, then <code>-S 1</code> … <code>-S 19</code> with <code>-c</code> to spot the corruption.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The three structures → <a href="../l23-vsfs/">L23 <abbr title="Very Simple File System — OSTEP's teaching file system">VSFS</abbr></a></li>
+<li>Atomic <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr> writes → <a href="../l20-disks/">L20</a></li>
+<li>Never overwrite in place → <a href="../l26-lfs-integrity/">L26 <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr></a></li>
+<li>Write-ahead logs in databases and Kafka — same idea.</li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 42.1 (the crash scenarios), 42.3 (<abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> — data, recovery, batching, <abbr title="Journal only metadata; write data in place first (ordered mode)">metadata journaling</abbr>, <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> reuse).</li>
+<li>🟡 42.2 <abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr>, 42.4 other approaches.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l24-ffs/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L24 · FFS &amp; locality">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L24 · FFS & locality
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../l26-lfs-integrity/" class="md-footer__link md-footer__link--next" aria-label="Next: L26 · LFS &amp; data integrity">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                L26 · LFS & data integrity
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

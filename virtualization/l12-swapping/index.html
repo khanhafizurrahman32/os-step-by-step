@@ -1,0 +1,2647 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l11-smaller-tables/">
+      
+      
+        <link rel="next" href="../../concurrency/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L12 · Swapping & replacement - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l12-swapping-going-beyond-physical-memory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L12 · Swapping & replacement
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../persistence/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-page-fault-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The page-fault path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#average-memory-access-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Average memory access time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-policies-which-page-to-throw-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The policies (which page to throw out)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workload-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workload lessons
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-vm-policy-bits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other VM policy bits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-example-do-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked example (do by hand)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../persistence/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-page-fault-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The page-fault path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#average-memory-access-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Average memory access time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-policies-which-page-to-throw-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The policies (which page to throw out)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workload-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workload lessons
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-vm-policy-bits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other VM policy bits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-example-do-by-hand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked example (do by hand)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l12-swapping-going-beyond-physical-memory">L12 · Swapping: going beyond physical memory<a class="headerlink" href="#l12-swapping-going-beyond-physical-memory" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 21 (pp. 227–235) · Ch 22 (pp. 237–254) · <strong>Priority:</strong> 🔴 must-know · Ch 23 ⚪ · <strong>Time:</strong> 55 min · <strong>Simulator:</strong> <code>vm-beyondphys-policy/paging-policy.py</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p>Your desk (<abbr title="Main memory — fast, but lost when power goes off">RAM</abbr>) is small; the filing cabinet (disk) is huge but slow. When your desk is full and you need another folder:</p>
+<ul>
+<li><strong>Mechanism:</strong> each page's entry has a "present?" flag. If a program touches a page that's in the cabinet, the hardware raises a <strong><abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr></strong>, and the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> fetches it from disk.</li>
+<li><strong>Policy:</strong> which folder do you put back to make room? Ideally the one you'll need <strong>furthest in the future</strong> (<abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr>). Since nobody knows the future, the usual guess is "the one you haven't touched for the longest" (<abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr>), or a cheap approximation of it (<strong><abbr title="LRU approximation: a hand sweeps pages, clearing use bits, and evicts the first with use bit 0">Clock</abbr></strong>).</li>
+</ul>
+<p>If you need more folders than fit on the desk at once, you spend all day walking to the cabinet. That's <strong><abbr title="Memory is so oversubscribed that the system spends its time paging">thrashing</abbr></strong>.</p>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Mechanism:</strong> pages can live in <strong><abbr title="Disk space reserved for pages moved out of memory">swap space</abbr></strong> on disk. The <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr>'s <strong><abbr title="PTE bit: is this page in physical memory (1) or swapped out to disk (0)?">present bit</abbr></strong> says whether a page is in memory. Touching a non-present page → <strong><abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr></strong> → the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> reads it from disk, updates the <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr>, retries.</li>
+<li><strong>Policy:</strong> when memory is full, evict a page. <strong><abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr></strong> (evict the page used furthest in the future) is the unbeatable benchmark; <strong><abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr></strong> approximates it using history; <strong><abbr title="LRU approximation: a hand sweeps pages, clearing use bits, and evicts the first with use bit 0">Clock</abbr></strong> approximates <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> cheaply with a <strong><abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr></strong>.</li>
+<li>If the working sets don't fit, the system <strong>thrashes</strong>. Evicting <strong>clean</strong> pages is cheaper than <strong>dirty</strong> ones.</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How can the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> use a larger, slower device to give the illusion of a large virtual memory — and how does it decide which page to evict?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Address spaces larger than <abbr title="Main memory — fast, but lost when power goes off">RAM</abbr></strong> → <em><abbr title="CPU instruction that writes a register's value to memory">store</abbr> some pages on disk; <abbr title="PTE bit: is this page in physical memory (1) or swapped out to disk (0)?">present bit</abbr> in the <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr></em> → <em><abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr> handler loads the page</em> → ❌ memory full → <em>evict something</em> → <em>which? <abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr></em> → ❌ needs the future → <em><abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr></em> → ❌ ignores importance, and suffers <strong><abbr title="With FIFO, adding cache space can increase misses">Belady's anomaly</abbr></strong> → <em>Random</em> → ❌ luck-based → <em><abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr>, uses history</em> → ❌ exact <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> means updating a data structure on <strong>every</strong> memory access → <em><abbr title="LRU approximation: a hand sweeps pages, clearing use bits, and evicts the first with use bit 0">Clock</abbr>: a <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> set by hardware, a sweeping hand</em> → <em>prefer clean pages; evict in the background with a <abbr title="Background OS thread that frees memory when it drops below a low watermark">swap daemon</abbr></em> → ❌ too many processes for memory → <em>admission control or the <abbr title="Linux out-of-memory killer — kills a process when memory runs out">OOM killer</abbr></em>.</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="the-page-fault-path">The page-fault path<a class="headerlink" href="#the-page-fault-path" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant P as Process
+    participant HW as MMU / TLB
+    participant OS as OS page-fault handler
+    participant D as Disk (swap)
+    P-&gt;&gt;HW: load from virtual address
+    HW-&gt;&gt;HW: TLB miss → walk table&lt;br/&gt;PTE valid, present = 0
+    HW-&gt;&gt;OS: page fault
+    OS-&gt;&gt;OS: find a free frame&lt;br/&gt;(or evict one, write it out if dirty)
+    OS-&gt;&gt;D: read page from swap (disk address in the PTE)
+    Note over P,OS: process is Blocked, another one runs
+    D--&gt;&gt;OS: I/O complete
+    OS-&gt;&gt;OS: PTE.present = 1, PTE.PFN = frame
+    OS-&gt;&gt;P: retry instruction → TLB miss → TLB hit</code></pre>
+<p>How to read the diagram: the program touches a page; the hardware finds its "present" flag is 0 and calls the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> (a <strong><abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr></strong>); the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> finds room, reads the page from disk (the process sleeps meanwhile and others run), marks it present and re-runs the <abbr title="One basic CPU operation, such as load, add or store">instruction</abbr>.</p>
+<p>Note the difference from L09: a page that is <strong>not valid</strong> isn't part of the program at all, so touching it is a bug and the program is killed. A page that is valid but <strong>not present</strong> is legitimate; it's just on disk right now.</p>
+<p><strong>When are pages evicted?</strong> Not at the last moment. A background <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> (the <strong><abbr title="Background OS thread that frees memory when it drops below a low watermark">swap daemon</abbr></strong>) wakes up when free memory drops below a <em>low watermark</em> and evicts pages in a batch until free memory reaches a <em>high watermark</em>. Batching is faster because several pages can be written to disk together.</p>
+<h3 id="average-memory-access-time">Average memory access time<a class="headerlink" href="#average-memory-access-time" title="Permanent link">&para;</a></h3>
+<p><strong><abbr title="Average memory access time = T_M + P_miss × T_D">AMAT</abbr> = T<sub>M</sub> + P<sub>miss</sub> × T<sub>D</sub></strong></p>
+<p>In words: every access costs one memory access (T<sub>M</sub>), plus — for the fraction of accesses that miss (P<sub>miss</sub>) — a trip to disk (T<sub>D</sub>).</p>
+<p><em>Example:</em> memory takes 100 ns; disk takes 10 ms, which is 10,000,000 ns.</p>
+<ul>
+<li>90% hits (P<sub>miss</sub> = 0.1): 100 ns + 0.1 × 10,000,000 ns ≈ <strong>1 ms</strong> per access — 10,000× slower than memory.</li>
+<li>99.9% hits (P<sub>miss</sub> = 0.001): 100 ns + 10,000 ns ≈ <strong>10.1 µs</strong> — still <strong>100× slower</strong> than memory.</li>
+</ul>
+<p>Lesson: disk is so slow that even a tiny miss rate dominates. Swapping is a safety net, not something to rely on.</p>
+<h3 id="the-policies-which-page-to-throw-out">The policies (which page to throw out)<a class="headerlink" href="#the-policies-which-page-to-throw-out" title="Permanent link">&para;</a></h3>
+<p>Here <abbr title="Main memory — fast, but lost when power goes off">RAM</abbr> acts as a <strong><abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr></strong> for the disk. A <strong>hit</strong> means the page was already in memory; a <strong>miss</strong> (<abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr>) means it had to be fetched from disk. To <strong>evict</strong> a page means to remove it from memory to make room.</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Evicts</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr></strong> (optimal, by Belady)</td>
+<td>The page that won't be needed for the longest time</td>
+<td>The best possible, but needs to know the future. Used only as a benchmark for the others</td>
+</tr>
+<tr>
+<td><strong><abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr></strong></td>
+<td>The page that arrived first</td>
+<td>Simple, but may throw out a page in constant use. Strange quirk (<strong><abbr title="With FIFO, adding cache space can increase misses">Belady's anomaly</abbr></strong>): giving it <em>more</em> memory can cause <em>more</em> misses</td>
+</tr>
+<tr>
+<td><strong>Random</strong></td>
+<td>Any page, at random</td>
+<td>Simple; no bad worst case, but no cleverness either</td>
+</tr>
+<tr>
+<td><strong><abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr></strong></td>
+<td>The page not used for the longest time</td>
+<td>Usually good, because recently used pages tend to be used again. Never shows <abbr title="With FIFO, adding cache space can increase misses">Belady's anomaly</abbr></td>
+</tr>
+<tr>
+<td><strong><abbr title="Least Frequently Used — evict the page used least often">LFU</abbr></strong></td>
+<td>The page used the fewest times</td>
+<td>Same spirit as <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr>, counting uses instead of recency</td>
+</tr>
+<tr>
+<td><strong><abbr title="LRU approximation: a hand sweeps pages, clearing use bits, and evicts the first with use bit 0">Clock</abbr></strong></td>
+<td>See below</td>
+<td>A cheap approximation of <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr>, used in real systems</td>
+</tr>
+</tbody>
+</table>
+<p><strong>How <abbr title="LRU approximation: a hand sweeps pages, clearing use bits, and evicts the first with use bit 0">Clock</abbr> works:</strong> imagine the pages arranged in a circle, with a clock hand pointing at one. The hardware sets a page's <strong><abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr></strong> to 1 whenever it's accessed. To evict, look at the page under the hand. If its <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> is 1, it was used recently: give it a second chance (set the bit to 0) and move on. If its <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> is 0, it hasn't been used since the hand last passed, so evict it. A common variant also prefers pages that haven't been modified (<strong>clean</strong> pages), because those don't need writing back to disk first.</p>
+<h3 id="workload-lessons">Workload lessons<a class="headerlink" href="#workload-lessons" title="Permanent link">&para;</a></h3>
+<p>How well a <abbr title="Which choice is made (e.g. which process runs next) — as opposed to mechanism">policy</abbr> does depends on the program's access pattern:</p>
+<ul>
+<li><strong>Random accesses (no <abbr title="Programs tend to reuse recent data (temporal) and nearby data (spatial)">locality</abbr>):</strong> every realistic <abbr title="Which choice is made (e.g. which process runs next) — as opposed to mechanism">policy</abbr> does the same; only the amount of memory matters.</li>
+<li><strong>"80-20" pattern</strong> (80% of accesses go to 20% of the pages): <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> wins, because it keeps the popular pages.</li>
+<li><strong>A loop over slightly too many pages</strong> (e.g. 51 pages, room for 50): <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> and <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr> <strong>miss every single time</strong>, because they always evict exactly the page needed next. Random does much better here.</li>
+</ul>
+<h3 id="other-vm-policy-bits">Other VM <abbr title="Which choice is made (e.g. which process runs next) — as opposed to mechanism">policy</abbr> bits<a class="headerlink" href="#other-vm-policy-bits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Demand <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr>:</strong> <abbr title="CPU instruction that reads a value from memory into a register">load</abbr> a page only when it's first touched. <strong>Prefetching:</strong> guess which page will be needed next and <abbr title="CPU instruction that reads a value from memory into a register">load</abbr> it early.</li>
+<li><strong>Thrashing:</strong> the pages that running programs actively need (their <strong>working sets</strong>) don't all fit in memory, so the system spends nearly all its time moving pages to and from disk and gets almost no work done. Fixes: run fewer programs at once (<strong>admission control</strong>), or kill one (Linux's <strong><abbr title="Linux out-of-memory killer — kills a process when memory runs out">OOM killer</abbr></strong>, "out of memory").</li>
+<li>Two tricks from VAX/VMS (Ch 23):<ul>
+<li><strong>Demand zeroing:</strong> when a program asks for a new page, don't clear it yet; clear it only when it's first used (many are never used).</li>
+<li><strong>Copy-on-write:</strong> after <code>fork()</code>, parent and child <em>share</em> their pages instead of copying them all. A page is copied only when one of them <strong>writes</strong> to it. Since the child usually calls <code>exec()</code> straight away, most pages are never copied, which makes fork + exec cheap.</li>
+</ul>
+</li>
+</ul>
+<h2 id="worked-example-do-by-hand">Worked example (do by hand)<a class="headerlink" href="#worked-example-do-by-hand" title="Permanent link">&para;</a></h2>
+<p>A program accesses pages in this order (the <em>reference string</em>): <strong>0 1 2 0 1 3 0 3 1 2 1</strong>. Memory has room for <strong>3 pages</strong>. For each <abbr title="Which choice is made (e.g. which process runs next) — as opposed to mechanism">policy</abbr>, go through the list: a page already in memory is a <strong>hit</strong>; otherwise it's a <strong>miss</strong>, and if memory is full the <abbr title="Which choice is made (e.g. which process runs next) — as opposed to mechanism">policy</abbr> chooses a victim. The first three misses (0, 1, 2) happen no matter what, because memory starts empty (<em>compulsory</em> or <em>cold-start</em> misses).</p>
+<ul>
+<li><strong><abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr>:</strong> misses on 0, 1, 2 (cold), 3 (evict 2, used furthest), 2 (evict 3 or 0) → <strong>6 hits / 11 = 54.5%</strong> (5 misses, 3 of them compulsory).</li>
+<li><strong><abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr>:</strong> 0 1 2 miss; 0 1 hit; 3 miss (evict 0); 0 miss (evict 1); 3 hit; 1 miss (evict 2); 2 miss (evict 3); 1 hit → <strong>4 hits = 36.4%</strong>.</li>
+<li><strong><abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr>:</strong> 0 1 2 miss; 0 1 hit; 3 miss (evict 2); 0 3 1 hit; 2 miss (evict 0); 1 hit → <strong>6 hits = 54.5%</strong> — matches <abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr> here.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Valid</strong> but not <strong>present</strong> → <abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr> (normal). <strong>Invalid</strong> → segfault.</li>
+<li>Page faults are handled by the <strong><abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr></strong> even on hardware-managed <abbr title="Translation-lookaside buffers — small hardware caches of VPN → PFN translations">TLBs</abbr> (disk I/O needs the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr>).</li>
+<li><abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> has no <abbr title="With FIFO, adding cache space can increase misses">Belady's anomaly</abbr>; <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr> does.</li>
+<li>Evicting a <strong>dirty</strong> page costs a disk write first.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: the page-fault sequence; <abbr title="Average memory access time = T_M + P_miss × T_D">AMAT</abbr> formula with the 99.9% example; the <abbr title="Which choice is made (e.g. which process runs next) — as opposed to mechanism">policy</abbr> table; redo the <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr> trace.</p>
+<details>
+<summary>What is the present bit?</summary>
+<p>A <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr> bit saying whether the page is in physical memory (1) or swapped out to disk (0).</p>
+</details>
+<details>
+<summary>What happens on a page fault?</summary>
+<p>The <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> finds a free frame (evicting one if needed), reads the page from swap, sets present=1 and the <abbr title="Physical frame number — which frame of physical memory holds the page">PFN</abbr>, and the faulting <abbr title="One basic CPU operation, such as load, add or store">instruction</abbr> is retried. The process is blocked during the I/O.</p>
+</details>
+<details>
+<summary>Write the average memory access time formula.</summary>
+<p><abbr title="Average memory access time = T_M + P_miss × T_D">AMAT</abbr> = T_M + P_miss × T_D.</p>
+</details>
+<details>
+<summary>What does OPT evict and why can't we use it?</summary>
+<p>The page that will be used furthest in the future; it requires knowing the future.</p>
+</details>
+<details>
+<summary>What is Belady's anomaly?</summary>
+<p>With <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr>, increasing <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> size can increase the number of misses. <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> and <abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr> (<abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr> algorithms) don't have it.</p>
+</details>
+<details>
+<summary>How does the Clock algorithm work?</summary>
+<p>Pages in a circle with a hardware-set <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr>. The hand sweeps: <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> 1 → clear it and move on; <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> 0 → evict.</p>
+</details>
+<details>
+<summary>Which workload makes LRU and FIFO miss every time?</summary>
+<p>Looping sequentially over one more page than the <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> holds.</p>
+</details>
+<details>
+<summary>What is thrashing and how is it handled?</summary>
+<p>Memory is oversubscribed so the system spends its time <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr>. Run fewer processes (admission control) or kill one (<abbr title="Linux out-of-memory killer — kills a process when memory runs out">OOM killer</abbr>).</p>
+</details>
+<details>
+<summary>What is copy-on-write?</summary>
+<p>After fork, parent and child share pages read-only; a page is copied only when one of them writes to it.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "Why does a 99.9% memory hit rate still make a program feel slow if the misses go to disk?"</p>
+<p><strong>Simulator drill</strong> (book's free Python homework tools — see <a href="../../start/recall-system/#four-more-tricks-that-pay-off">the recall system</a>): <code>python3 paging-policy.py -p FIFO -a 0,1,2,0,1,3,0,3,1,2,1 -C 3 -c</code>, then <code>-p LRU</code>, <code>-p OPT</code>, <code>-p CLOCK</code>.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Present bit in the <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr> → <a href="../l09-paging/">L09</a></li>
+<li><abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr>-style caching → the buffer <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> in <a href="../../persistence/l23-vsfs/">L23</a></li>
+<li>Disk speed numbers → <a href="../../persistence/l20-disks/">L20 Disks</a></li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 Ch 21: 21.1–21.6 (short).</li>
+<li>🔴 Ch 22: 22.1–22.8 and 22.11. Do the workload figures in 22.6.</li>
+<li>⚪ Ch 23 except 23.5 (<abbr title="Zero a new page only when it's first touched">demand zeroing</abbr>, <abbr title="Share pages read-only (e.g. after fork) and copy one only when it's written">copy-on-write</abbr>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l11-smaller-tables/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L11 · Smaller page tables">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L11 · Smaller page tables
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../concurrency/" class="md-footer__link md-footer__link--next" aria-label="Next: Part II · Concurrency">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Part II · Concurrency
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

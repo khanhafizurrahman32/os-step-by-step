@@ -1,0 +1,3299 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../drills/">
+      
+      
+        <link rel="next" href="../glossary/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Flashcards (Anki) - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#flashcards-anki" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Flashcards (Anki)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../persistence/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../persistence/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l23-vsfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../persistence/l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-into-anki-2-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import into Anki (2 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#all-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All cards
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="All cards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtualization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-into-anki-2-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import into Anki (2 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#all-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All cards
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="All cards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#virtualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtualization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="flashcards-anki">Flashcards (Anki)<a class="headerlink" href="#flashcards-anki" title="Permanent link">&para;</a></h1>
+<p>Every flashcard from the lessons — <strong>174 cards</strong> — in one deck. This page is generated by <code>scripts/build_flashcards.py</code>; edit the lessons, not this page.</p>
+<h2 id="import-into-anki-2-minutes">Import into Anki (2 minutes)<a class="headerlink" href="#import-into-anki-2-minutes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Download <strong><a href="../os-step-by-step-anki.txt">os-step-by-step-anki.txt</a></strong> (or take it from the <code>flashcards/</code> folder of the repo).</li>
+<li>In Anki: <strong>File → Import</strong>, pick the file. The deck name, tab separator, HTML and tags are set by the file's header lines, so the defaults are right.</li>
+<li>Study daily. Anki's spacing replaces the +1/+3/+7/+21-day schedule in <a href="../../start/recall-system/">the recall system</a>.</li>
+</ol>
+<p>Tags let you study one part or lesson: in the browser search for <code>tag:concurrency</code> or <code>tag:L14</code>. Unsuspend only the lessons you've done, so you're never quizzed on material you haven't read.</p>
+<p>Prefer Quizlet, RemNote or a spreadsheet? Use <code>flashcards/os-step-by-step.csv</code>.</p>
+<h2 id="all-cards">All cards<a class="headerlink" href="#all-cards" title="Permanent link">&para;</a></h2>
+<p>Cover the right column and test yourself.</p>
+<h3 id="virtualization">Virtualization<a class="headerlink" href="#virtualization" title="Permanent link">&para;</a></h3>
+<p><strong><a href="../../virtualization/l01-intro/">L01 · Intro &amp; the three pieces</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What are the "three easy pieces"?</td>
+<td>Virtualization, <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr>, <abbr title="Keeping data safe across power loss and crashes, on disks and SSDs">persistence</abbr>.</td>
+</tr>
+<tr>
+<td>Why can two processes print the same address for a variable yet hold different values?</td>
+<td>Each has its own <abbr title="An address as seen by a program; translated by hardware and OS to a physical address">virtual address</abbr> space; the same <abbr title="An address as seen by a program; translated by hardware and OS to a physical address">virtual address</abbr> maps to different physical memory.</td>
+</tr>
+<tr>
+<td>Why does a shared counter incremented by two <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> end up wrong?</td>
+<td><code>counter++</code> is <abbr title="CPU instruction that reads a value from memory into a register">load</abbr>–add–<abbr title="CPU instruction that writes a register's value to memory">store</abbr>. If a <abbr title="Saving one process's registers and restoring another's so the CPU runs the other process">context switch</abbr> hits between them, one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr>'s update overwrites the other's. The three <abbr title="Basic CPU operations, such as load, add or store">instructions</abbr> are not <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>.</td>
+</tr>
+<tr>
+<td>How does a <abbr title="A request from a user program to the OS; it traps into kernel mode to do privileged work">system call</abbr> differ from a procedure call?</td>
+<td>It traps into the <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr> and raises the hardware privilege level, so the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> can perform restricted operations; a procedure call stays in <abbr title="Restricted CPU mode for programs: no I/O, no changing page tables">user mode</abbr>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l02-process/">L02 · Processes &amp; fork / exec / wait</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What does fork() return in the parent and in the child?</td>
+<td>Child's <abbr title="Process ID — the number that identifies a process">PID</abbr> in the parent; 0 in the child; −1 on failure.</td>
+</tr>
+<tr>
+<td>When does exec() return?</td>
+<td>Only if it fails. On success the calling program is replaced and the old code is gone.</td>
+</tr>
+<tr>
+<td>Why does UNIX split process creation into fork() and exec()?</td>
+<td>So code can run in the child between the two, to set up <abbr title="Sending a program's output to a file (&gt;) or taking its input from one (&lt;)">redirection</abbr>, pipes or other environment changes before the new program starts.</td>
+</tr>
+<tr>
+<td>What are the three main process states and their transitions?</td>
+<td>Running, Ready, Blocked. Running→Ready (descheduled), Ready→Running (scheduled), Running→Blocked (I/O starts), Blocked→Ready (I/O done).</td>
+</tr>
+<tr>
+<td>What is a <abbr title="A process that has exited but whose parent hasn't yet called wait() to collect its status">zombie</abbr> process?</td>
+<td>One that has exited but whose parent hasn't called wait() to collect its exit status.</td>
+</tr>
+<tr>
+<td>What does the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> <abbr title="CPU instruction that writes a register's value to memory">store</abbr> in a process control <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> (<abbr title="Process control block — the kernel structure holding a process's saved registers, state, PID and more">PCB</abbr>)?</td>
+<td>Saved <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr> (context), state, <abbr title="Process ID — the number that identifies a process">PID</abbr>, parent, memory info, open files, and similar per-process data.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l03-lde/">L03 · Limited direct execution</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What does "<abbr title="Run programs directly on the CPU for speed, but restrict them with user mode, traps and a timer interrupt">limited direct execution</abbr>" mean?</td>
+<td>Run the program directly on the CPU for speed, but limit it: <abbr title="Restricted CPU mode for programs: no I/O, no changing page tables">user mode</abbr>, traps for <abbr title="Allowed only in kernel mode">privileged</abbr> operations, and a <abbr title="Hardware interrupt every few ms that hands control back to the OS">timer interrupt</abbr> so the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> regains control.</td>
+</tr>
+<tr>
+<td>What is the <abbr title="Table of handler addresses the kernel installs at boot; tells the hardware where to jump on traps and interrupts">trap table</abbr> and when is it set up?</td>
+<td>A table of handler addresses for traps/<abbr title="Hardware signals that make the CPU run an OS handler">interrupts</abbr>. The <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr> installs it at boot using a <abbr title="A CPU instruction allowed only in kernel mode">privileged instruction</abbr>.</td>
+</tr>
+<tr>
+<td>Why does the <abbr title="Scheduling approach where the OS only regains control when a program makes a syscall or yields">cooperative</abbr> approach fail?</td>
+<td>A process stuck in an infinite loop never makes a <abbr title="System call — a request from a user program to the OS via a trap into kernel mode">syscall</abbr>, so the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> never runs again; you must reboot.</td>
+</tr>
+<tr>
+<td>How does the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> regain control in the non-<abbr title="Scheduling approach where the OS only regains control when a program makes a syscall or yields">cooperative</abbr> approach?</td>
+<td>A hardware <abbr title="Hardware interrupt every few ms that hands control back to the OS">timer interrupt</abbr> every few milliseconds jumps into the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr>'s <abbr title="OS code that runs when a particular interrupt arrives">interrupt handler</abbr>.</td>
+</tr>
+<tr>
+<td>In a <abbr title="Saving one process's registers and restoring another's so the CPU runs the other process">context switch</abbr>, which <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr> does the hardware save and which does the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> save?</td>
+<td>Hardware saves the user <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr> onto the process's <abbr title="A per-process stack inside the kernel, used while the kernel runs on that process's behalf">kernel stack</abbr> on the <abbr title="A hardware signal that makes the CPU run an OS handler">interrupt</abbr>. The <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> saves the <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr> <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr> into the process's <abbr title="Process control block — the kernel structure holding a process's saved registers, state, PID and more">PCB</abbr> in switch().</td>
+</tr>
+<tr>
+<td>Why pass a system-call number instead of an address?</td>
+<td>So user code can only reach approved <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr> entry points; it can't jump into the middle of the <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l04-scheduling/">L04 · Scheduling basics: <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr>, <abbr title="Shortest Job First — run the shortest job next; non-preemptive">SJF</abbr>, <abbr title="Shortest Time-to-Completion First — preemptive SJF; run the job with the least time remaining">STCF</abbr>, <abbr title="Round Robin — run each job for a time slice, then move to the next">RR</abbr></a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Define <abbr title="Completion time minus arrival time">turnaround time</abbr> and <abbr title="Time a job first runs minus its arrival time">response time</abbr>.</td>
+<td>Turnaround = completion − arrival. Response = first run − arrival.</td>
+</tr>
+<tr>
+<td>What is the <abbr title="Short jobs stuck waiting behind a long job under FIFO">convoy effect</abbr>?</td>
+<td>Short jobs stuck waiting behind a long job in <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr>, inflating average turnaround.</td>
+</tr>
+<tr>
+<td>What's the difference between <abbr title="Shortest Job First — run the shortest job next; non-preemptive">SJF</abbr> and <abbr title="Shortest Time-to-Completion First — preemptive SJF; run the job with the least time remaining">STCF</abbr>?</td>
+<td><abbr title="Shortest Job First — run the shortest job next; non-preemptive">SJF</abbr> is non-preemptive: it picks the shortest job when choosing. <abbr title="Shortest Time-to-Completion First — preemptive SJF; run the job with the least time remaining">STCF</abbr> preempts the running job whenever a new job has less remaining time.</td>
+</tr>
+<tr>
+<td>Why does <abbr title="Round Robin — run each job for a time slice, then move to the next">RR</abbr> have poor turnaround?</td>
+<td>It stretches every job out across many slices, so all jobs finish near the end.</td>
+</tr>
+<tr>
+<td>What's the trade-off in choosing <abbr title="Round Robin — run each job for a time slice, then move to the next">RR</abbr>'s <abbr title="How long a job runs before the scheduler may switch (a multiple of the timer interrupt period)">time slice</abbr>?</td>
+<td>Shorter = better response but more context-switch overhead; longer amortizes the switch cost but hurts response.</td>
+</tr>
+<tr>
+<td>How does the scheduler use I/O to improve utilisation?</td>
+<td>When a job <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> on I/O, run another job; treat each CPU burst as a separate job so interactive bursts run quickly and overlap with I/O.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l05-mlfq/">L05 · <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr>, lottery &amp; multiprocessor scheduling</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What is <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr>'s key idea?</td>
+<td>Use several priority queues and adjust a job's priority based on its observed behaviour, so it approximates <abbr title="Shortest Job First — run the shortest job next; non-preemptive">SJF</abbr> without knowing job lengths.</td>
+</tr>
+<tr>
+<td>Which <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr> rule prevents <abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr>, and what else does it fix?</td>
+<td>Rule 5 (periodic <abbr title="MLFQ rule 5 — periodically move every job to the top queue to stop starvation">priority boost</abbr>). It also lets a job that became interactive get back to high priority.</td>
+</tr>
+<tr>
+<td>How could a program game the original <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr>, and what fixes it?</td>
+<td>Issue an I/O just before its slice ends to stay at high priority. Fixed by accounting for total time used at a level (new Rule 4).</td>
+</tr>
+<tr>
+<td>Why do higher <abbr title="Multi-Level Feedback Queue — priority queues where a job's priority changes based on its observed behaviour">MLFQ</abbr> queues get shorter time slices?</td>
+<td>They hold interactive jobs that need fast switching; lower queues hold CPU-bound jobs that benefit from long slices with less switching.</td>
+</tr>
+<tr>
+<td>Lottery vs <abbr title="Deterministic proportional share: run the job with the lowest pass value, then add its stride">stride scheduling</abbr>?</td>
+<td>Lottery picks a random ticket each slice — simple, no global state, fair on average. Stride is deterministic (run lowest pass, add stride) — exactly fair but needs global state.</td>
+</tr>
+<tr>
+<td>How does Linux <abbr title="Completely Fair Scheduler (Linux) — runs the process with the lowest virtual runtime">CFS</abbr> pick the next process?</td>
+<td>The one with the lowest virtual runtime, stored in a <abbr title="A self-balancing binary search tree; lookups, inserts and deletes take O(log n)">red-black tree</abbr>; nice values weight how fast <abbr title="Virtual runtime in Linux CFS — CPU time used, weighted by priority (nice value)">vruntime</abbr> grows.</td>
+</tr>
+<tr>
+<td>Single-queue vs multi-queue multiprocessor scheduling?</td>
+<td>Single-queue: simple, balanced, but lock contention and poor <abbr title="A process runs faster on the CPU it last ran on, because that CPU's cache is still warm">cache affinity</abbr>. Multi-queue: scalable and affinity-friendly, but needs migration/<abbr title="An idle CPU takes jobs from another CPU's queue to balance load">work stealing</abbr> to fix <abbr title="CPU instruction that reads a value from memory into a register">load</abbr> imbalance.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l06-address-space/">L06 · Address spaces &amp; the memory API</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What are the three segments of a typical <abbr title="A process's private view of memory: code, heap and stack at virtual addresses">address space</abbr> and how do they grow?</td>
+<td>Code (fixed), <abbr title="Memory a program requests while running (malloc in C, new in Java) and frees when done">heap</abbr> (grows towards higher addresses), <abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr> (grows towards lower addresses).</td>
+</tr>
+<tr>
+<td>What are the three goals of virtual memory?</td>
+<td>Transparency, efficiency (time and space), protection/isolation.</td>
+</tr>
+<tr>
+<td>Is <abbr title="C library call that allocates heap memory; free() gives it back">malloc</abbr>() a <abbr title="A request from a user program to the OS; it traps into kernel mode to do privileged work">system call</abbr>?</td>
+<td>No. It's a library routine; it gets memory from the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> with brk/sbrk or mmap.</td>
+</tr>
+<tr>
+<td>Why must you allocate strlen(s)+1 bytes to copy a string?</td>
+<td>To leave room for the terminating null byte.</td>
+</tr>
+<tr>
+<td>What is a dangling <abbr title="A variable that holds a memory address">pointer</abbr>?</td>
+<td>A <abbr title="A variable that holds a memory address">pointer</abbr> to memory that has already been freed; using it is undefined behaviour.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l07-segmentation/">L07 · Address translation: base/bounds &amp; <abbr title="Separate base and bounds for each segment (code, heap, stack)">segmentation</abbr></a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How does base-and-bounds translation work?</td>
+<td>Physical = virtual + base; if virtual ≥ bounds, the hardware raises an exception.</td>
+</tr>
+<tr>
+<td>Where do <abbr title="Translation with two registers: physical = virtual + base; fault if virtual ≥ bounds">base and bounds</abbr> live, and who can change them?</td>
+<td>In the CPU's <abbr title="Memory management unit — CPU hardware that translates virtual to physical addresses">MMU</abbr>; only <abbr title="Allowed only in kernel mode">privileged</abbr> (<abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr>-mode) <abbr title="Basic CPU operations, such as load, add or store">instructions</abbr> can change them. The <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> saves/restores them in the <abbr title="Process control block — the kernel structure holding a process's saved registers, state, PID and more">PCB</abbr> on a <abbr title="Saving one process's registers and restoring another's so the CPU runs the other process">context switch</abbr>.</td>
+</tr>
+<tr>
+<td>What problem does <abbr title="Separate base and bounds for each segment (code, heap, stack)">segmentation</abbr> solve over base-and-bounds?</td>
+<td>It avoids wasting physical memory for the unused space between <abbr title="Memory a program requests while running (malloc in C, new in Java) and frees when done">heap</abbr> and <abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr>, by relocating each <abbr title="A contiguous region of the address space, such as code, heap or stack">segment</abbr> separately.</td>
+</tr>
+<tr>
+<td>How does the hardware know which <abbr title="A contiguous region of the address space, such as code, heap or stack">segment</abbr> a <abbr title="An address as seen by a program; translated by hardware and OS to a physical address">virtual address</abbr> is in?</td>
+<td>Typically the top bits of the <abbr title="An address as seen by a program; translated by hardware and OS to a physical address">virtual address</abbr> select the <abbr title="A contiguous region of the address space, such as code, heap or stack">segment</abbr>; the rest is the offset.</td>
+</tr>
+<tr>
+<td>What is <abbr title="Free memory split into many small holes between allocations, too small to use">external fragmentation</abbr> and why does <abbr title="Separate base and bounds for each segment (code, heap, stack)">segmentation</abbr> cause it?</td>
+<td>Free memory split into many small variable-sized holes. Segments have different sizes, so allocating and freeing them leaves gaps too small to use.</td>
+</tr>
+<tr>
+<td>How are code segments shared between processes?</td>
+<td>With protection bits: a read-execute-only code <abbr title="A contiguous region of the address space, such as code, heap or stack">segment</abbr> can be mapped into many address spaces safely.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l08-free-space/">L08 · Free-space management</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How does free() know the size of the <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>?</td>
+<td>It reads a header stored just before the returned <abbr title="A variable that holds a memory address">pointer</abbr>, which holds the size (and a magic number for integrity).</td>
+</tr>
+<tr>
+<td>What is <abbr title="Merging adjacent free chunks into one bigger chunk">coalescing</abbr>?</td>
+<td>Merging a freed chunk with adjacent free chunks into a single larger free chunk.</td>
+</tr>
+<tr>
+<td>Best fit vs <abbr title="Allocate from the first free chunk that is big enough">first fit</abbr>?</td>
+<td>Best fit searches the whole list for the smallest hole that fits (less waste, slow, slivers). First fit takes the first hole that fits (fast, slivers at the list head).</td>
+</tr>
+<tr>
+<td>How does the <abbr title="Splits memory in powers of two; a freed block merges with its 'buddy' if that is free">buddy allocator</abbr> make <abbr title="Merging adjacent free chunks into one bigger chunk">coalescing</abbr> easy?</td>
+<td>Blocks are powers of two; a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>'s buddy address differs by a single bit, so checking and merging is quick and recursive.</td>
+</tr>
+<tr>
+<td>What's the main downside of the <abbr title="Splits memory in powers of two; a freed block merges with its 'buddy' if that is free">buddy allocator</abbr>?</td>
+<td>Internal fragmentation, because requests are rounded up to a power of two.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l09-paging/">L09 · Paging</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What is a page vs a <abbr title="A fixed-size slot of physical memory that holds one page">page frame</abbr>?</td>
+<td>A page is a fixed-size chunk of virtual memory; a <abbr title="A fixed-size slot of physical memory that holds one page">page frame</abbr> is the same-size slot in physical memory.</td>
+</tr>
+<tr>
+<td>How is a <abbr title="An address as seen by a program; translated by hardware and OS to a physical address">virtual address</abbr> split under <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr>?</td>
+<td>High bits = virtual page number (<abbr title="Virtual page number — the high bits of a virtual address">VPN</abbr>); low log2(page size) bits = offset.</td>
+</tr>
+<tr>
+<td>Which part of the address does the <abbr title="Per-process structure mapping virtual page numbers to physical frame numbers">page table</abbr> translate?</td>
+<td>Only the <abbr title="Virtual page number — the high bits of a virtual address">VPN</abbr> → <abbr title="Physical frame number — which frame of physical memory holds the page">PFN</abbr>. The offset is copied unchanged.</td>
+</tr>
+<tr>
+<td>How large is a linear <abbr title="Per-process structure mapping virtual page numbers to physical frame numbers">page table</abbr> for a 32-bit space with 4 KB pages and 4-byte <abbr title="Page-table entries — each holds a PFN plus valid, protection, present, dirty and reference bits">PTEs</abbr>?</td>
+<td>2^20 entries × 4 bytes = 4 MB per process.</td>
+</tr>
+<tr>
+<td>Why is basic <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr> slow?</td>
+<td>Each memory reference needs an extra memory access to fetch the <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr> first.</td>
+</tr>
+<tr>
+<td>Valid bit vs <abbr title="PTE bit: is this page in physical memory (1) or swapped out to disk (0)?">present bit</abbr>?</td>
+<td>Valid: the page belongs to the <abbr title="A process's private view of memory: code, heap and stack at virtual addresses">address space</abbr>. Present: the page is currently in physical memory (not swapped out).</td>
+</tr>
+<tr>
+<td>Two advantages of <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr> over <abbr title="Separate base and bounds for each segment (code, heap, stack)">segmentation</abbr>?</td>
+<td>No <abbr title="Free memory split into many small holes between allocations, too small to use">external fragmentation</abbr> (all frames same size), and flexible support for sparse address spaces.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l10-tlb/">L10 · <abbr title="Translation-lookaside buffers — small hardware caches of VPN → PFN translations">TLBs</abbr>: making <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr> fast</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What does the <abbr title="Translation-lookaside buffer — small hardware cache of VPN → PFN translations">TLB</abbr> <abbr title="CPU instruction that writes a register's value to memory">store</abbr>?</td>
+<td>Recently used virtual-to-physical page translations (<abbr title="Virtual page number — the high bits of a virtual address">VPN</abbr> → <abbr title="Physical frame number — which frame of physical memory holds the page">PFN</abbr> plus protection and other bits).</td>
+</tr>
+<tr>
+<td>Why does the <abbr title="Translation-lookaside buffer — small hardware cache of VPN → PFN translations">TLB</abbr> work well for most programs?</td>
+<td>Spatial and <abbr title="Accessing an address makes the same address likely to be accessed again soon">temporal locality</abbr>: nearby accesses fall in the same page and pages get reused.</td>
+</tr>
+<tr>
+<td>Hardware-managed vs software-managed <abbr title="The translation isn't in the TLB, so the page table must be walked">TLB miss</abbr>?</td>
+<td>Hardware: the CPU walks the <abbr title="Per-process structure mapping virtual page numbers to physical frame numbers">page table</abbr> itself (<abbr title="The CPU family in most PCs and servers (Intel, AMD)">x86</abbr>). Software: the CPU traps to the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr>, which walks the table and installs the entry (<abbr title="A simple RISC CPU family often used in teaching">MIPS</abbr>) — more flexible.</td>
+</tr>
+<tr>
+<td>What's special about returning from a <abbr title="Translation-lookaside buffer — small hardware cache of VPN → PFN translations">TLB</abbr>-miss <abbr title="An instruction that jumps into the kernel and raises privilege, used for system calls">trap</abbr>?</td>
+<td>It must retry the <abbr title="One basic CPU operation, such as load, add or store">instruction</abbr> that caused the miss, unlike a <abbr title="System call — a request from a user program to the OS via a trap into kernel mode">syscall</abbr> return which continues with the next <abbr title="One basic CPU operation, such as load, add or store">instruction</abbr>.</td>
+</tr>
+<tr>
+<td>How do ASIDs help with context switches?</td>
+<td>Entries are tagged with the address-space ID, so the <abbr title="Translation-lookaside buffer — small hardware cache of VPN → PFN translations">TLB</abbr> can hold translations for several processes without flushing.</td>
+</tr>
+<tr>
+<td>What is <abbr title="TLB entries × page size — memory reachable without a TLB miss">TLB coverage</abbr>?</td>
+<td>Number of entries × page size — the amount of memory reachable without a <abbr title="The translation isn't in the TLB, so the page table must be walked">TLB miss</abbr>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l11-smaller-tables/">L11 · Smaller <abbr title="Per-process structures mapping virtual page numbers to physical frame numbers">page tables</abbr>: multi-level &amp; friends</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Why are linear <abbr title="Per-process structures mapping virtual page numbers to physical frame numbers">page tables</abbr> wasteful?</td>
+<td>They allocate a <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr> for every virtual page, even the vast unused region between <abbr title="Memory a program requests while running (malloc in C, new in Java) and frees when done">heap</abbr> and <abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr>.</td>
+</tr>
+<tr>
+<td>How does a <abbr title="Page table split into page-sized pieces, tracked by a page directory; unused pieces aren't allocated">multi-level page table</abbr> save space?</td>
+<td>The <abbr title="Per-process structure mapping virtual page numbers to physical frame numbers">page table</abbr> is split into page-sized chunks; a <abbr title="Top level of a multi-level page table; points to the pages of PTEs that are in use">page directory</abbr> tracks them, and chunks with no valid entries are never allocated.</td>
+</tr>
+<tr>
+<td>What's the cost of a two-level <abbr title="Per-process structure mapping virtual page numbers to physical frame numbers">page table</abbr>?</td>
+<td>On a <abbr title="The translation isn't in the TLB, so the page table must be walked">TLB miss</abbr>, two memory accesses instead of one to translate (plus more complexity).</td>
+</tr>
+<tr>
+<td>How many 4-byte <abbr title="Page-table entries — each holds a PFN plus valid, protection, present, dirty and reference bits">PTEs</abbr> fit in a 4 KB page, and what does that imply?</td>
+<td>1024 → each level indexes with 10 bits.</td>
+</tr>
+<tr>
+<td>What's an <abbr title="One system-wide table with an entry per physical frame">inverted page table</abbr>?</td>
+<td>A single system-wide table with one entry per physical frame, recording which process and virtual page use it; searched with a <abbr title="A structure that finds items by computing an index from their key">hash table</abbr>.</td>
+</tr>
+<tr>
+<td>Why not just use bigger pages?</td>
+<td>Internal fragmentation: most of each big page goes unused for small allocations.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../virtualization/l12-swapping/">L12 · Swapping: going beyond physical memory</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What is the <abbr title="PTE bit: is this page in physical memory (1) or swapped out to disk (0)?">present bit</abbr>?</td>
+<td>A <abbr title="Page-table entry — PFN plus valid, protection, present, dirty and reference bits">PTE</abbr> bit saying whether the page is in physical memory (1) or swapped out to disk (0).</td>
+</tr>
+<tr>
+<td>What happens on a <abbr title="Access to a page that isn't present in memory; the OS loads it from disk">page fault</abbr>?</td>
+<td>The <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> finds a free frame (evicting one if needed), reads the page from swap, sets present=1 and the <abbr title="Physical frame number — which frame of physical memory holds the page">PFN</abbr>, and the faulting <abbr title="One basic CPU operation, such as load, add or store">instruction</abbr> is retried. The process is blocked during the I/O.</td>
+</tr>
+<tr>
+<td>Write the average memory access time formula.</td>
+<td><abbr title="Average memory access time = T_M + P_miss × T_D">AMAT</abbr> = T_M + P_miss × T_D.</td>
+</tr>
+<tr>
+<td>What does <abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr> evict and why can't we use it?</td>
+<td>The page that will be used furthest in the future; it requires knowing the future.</td>
+</tr>
+<tr>
+<td>What is <abbr title="With FIFO, adding cache space can increase misses">Belady's anomaly</abbr>?</td>
+<td>With <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr>, increasing <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> size can increase the number of misses. <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> and <abbr title="Optimal replacement — evict the page used furthest in the future (needs to know the future)">OPT</abbr> (<abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr> algorithms) don't have it.</td>
+</tr>
+<tr>
+<td>How does the <abbr title="LRU approximation: a hand sweeps pages, clearing use bits, and evicts the first with use bit 0">Clock</abbr> algorithm work?</td>
+<td>Pages in a circle with a hardware-set <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr>. The hand sweeps: <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> 1 → clear it and move on; <abbr title="Set by hardware when a page is accessed; used by the Clock algorithm">use bit</abbr> 0 → evict.</td>
+</tr>
+<tr>
+<td>Which workload makes <abbr title="Least Recently Used — evict the page unused for the longest time">LRU</abbr> and <abbr title="First in, first out — serve jobs (or evict pages) in arrival order">FIFO</abbr> miss every time?</td>
+<td>Looping sequentially over one more page than the <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> holds.</td>
+</tr>
+<tr>
+<td>What is <abbr title="Memory is so oversubscribed that the system spends its time paging">thrashing</abbr> and how is it handled?</td>
+<td>Memory is oversubscribed so the system spends its time <abbr title="Splitting memory into fixed-size pages (virtual) and frames (physical)">paging</abbr>. Run fewer processes (admission control) or kill one (<abbr title="Linux out-of-memory killer — kills a process when memory runs out">OOM killer</abbr>).</td>
+</tr>
+<tr>
+<td>What is <abbr title="Share pages read-only (e.g. after fork) and copy one only when it's written">copy-on-write</abbr>?</td>
+<td>After fork, parent and child share pages read-only; a page is copied only when one of them writes to it.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="concurrency">Concurrency<a class="headerlink" href="#concurrency" title="Permanent link">&para;</a></h3>
+<p><strong><a href="../../concurrency/l13-threads/">L13 · Threads &amp; race conditions</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What do <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> in a process share, and what is private to each?</td>
+<td>Shared: code, <abbr title="Memory a program requests while running (malloc in C, new in Java) and frees when done">heap</abbr>, globals, open files (the <abbr title="A process's private view of memory: code, heap and stack at virtual addresses">address space</abbr>). Private: <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr>, <abbr title="Register holding the address of the next instruction to run (also called instruction pointer)">program counter</abbr>, <abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr>.</td>
+</tr>
+<tr>
+<td>Why might counter++ give the wrong result with two <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr>?</td>
+<td>It's <abbr title="CPU instruction that reads a value from memory into a register">load</abbr>, add, <abbr title="CPU instruction that writes a register's value to memory">store</abbr>; an <abbr title="A hardware signal that makes the CPU run an OS handler">interrupt</abbr> between them lets the other <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> read the old value, and one update is lost.</td>
+</tr>
+<tr>
+<td>Define <abbr title="Code that accesses a shared resource and must not run concurrently">critical section</abbr>, <abbr title="The result depends on the timing of execution">race condition</abbr> and <abbr title="Only one thread may be in the critical section at a time">mutual exclusion</abbr>.</td>
+<td>Critical section: code touching shared data. Race condition: result depends on timing. Mutual exclusion: only one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> in the <abbr title="Code that accesses a shared resource and must not run concurrently">critical section</abbr> at a time.</td>
+</tr>
+<tr>
+<td>Two reasons to use <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr>?</td>
+<td>Parallelism on multiple CPUs, and avoiding blocking the program on slow I/O.</td>
+</tr>
+<tr>
+<td>Why is returning a <abbr title="A variable that holds a memory address">pointer</abbr> to a local variable from a <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> a bug?</td>
+<td>The local lives on the <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr>'s <abbr title="Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return">stack</abbr>, which is freed when the <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> exits.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../concurrency/l14-locks/">L14 · Locks</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Three criteria for evaluating a lock?</td>
+<td>Correctness (<abbr title="Only one thread may be in the critical section at a time">mutual exclusion</abbr>), fairness (no <abbr title="A job or thread never gets the resource it waits for because others keep getting it">starvation</abbr>), performance (overhead uncontended, one CPU, many CPUs).</td>
+</tr>
+<tr>
+<td>Why doesn't disabling <abbr title="Hardware signals that make the CPU run an OS handler">interrupts</abbr> work as a general lock?</td>
+<td>It's <abbr title="Allowed only in kernel mode">privileged</abbr> (programs could abuse it), doesn't work on multiprocessors, can lose <abbr title="Hardware signals that make the CPU run an OS handler">interrupts</abbr>, and is slow on modern CPUs. OK only inside the <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr> briefly.</td>
+</tr>
+<tr>
+<td>Why does a simple flag-based lock fail?</td>
+<td>Testing the flag and setting it are separate steps; an <abbr title="A hardware signal that makes the CPU run an OS handler">interrupt</abbr> in between lets two <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> both see it free and both enter.</td>
+</tr>
+<tr>
+<td>What does <abbr title="Atomic instruction: return the old value at an address and store a new one">test-and-set</abbr> do?</td>
+<td>Atomically returns the old value at an address and sets it to a new value.</td>
+</tr>
+<tr>
+<td>How does a <abbr title="Fair lock using fetch-and-add: take a ticket, wait until it's your turn">ticket lock</abbr> guarantee fairness?</td>
+<td>Fetch-and-add hands out increasing tickets; the lock serves turns in order, so each <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> gets in once its number comes up.</td>
+</tr>
+<tr>
+<td>Why are spin locks bad on a single CPU?</td>
+<td>A waiting <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> spins for its whole <abbr title="How long a job runs before the scheduler may switch (a multiple of the timer interrupt period)">time slice</abbr>, but the holder can't run to release the lock during that time.</td>
+</tr>
+<tr>
+<td>What is the wakeup/waiting race and how is it fixed?</td>
+<td>A <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> about to <abbr title="Solaris call that puts the calling thread to sleep">park</abbr>() gets unparked before it sleeps, then sleeps forever. Solaris fixes it with setpark(); futexes check the value atomically in the <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr>.</td>
+</tr>
+<tr>
+<td>What is a <abbr title="Spin briefly in case the lock frees soon, then sleep">two-phase lock</abbr>?</td>
+<td>Spin for a short time hoping the lock frees up soon; if not, sleep until woken.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../concurrency/l15-concurrent-ds/">L15 · Lock-based concurrent data structures</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How does a sloppy (approximate) counter work?</td>
+<td>Per-CPU local counters with their own locks; when one reaches threshold S it's added to the global counter. Low contention, but the global value lags.</td>
+</tr>
+<tr>
+<td>What's the effect of increasing S in a <abbr title="Approximate counter with per-CPU local counts flushed to a global count every S updates">sloppy counter</abbr>?</td>
+<td>Better scalability, less accurate global count.</td>
+</tr>
+<tr>
+<td>Why does the Michael &amp; Scott queue use a dummy node?</td>
+<td>To keep the head and tail operations on separate nodes so the head lock and tail lock can be held concurrently.</td>
+</tr>
+<tr>
+<td>Why does a <abbr title="A structure that finds items by computing an index from their key">hash table</abbr> with per-bucket locks scale well?</td>
+<td>Operations on different buckets don't contend for the same lock.</td>
+</tr>
+<tr>
+<td>What's <abbr title="Lock coupling: hold one node's lock while acquiring the next node's">hand-over-hand locking</abbr> and why is it often slow?</td>
+<td>A lock per node; you grab the next node's lock before releasing the current one. The per-node lock overhead usually outweighs the extra <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../concurrency/l16-condvars/">L16 · Condition variables</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What does pthread_cond_wait(c, m) do?</td>
+<td>Atomically releases <abbr title="A lock providing mutual exclusion">mutex</abbr> m and puts the <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> to sleep on c; when woken, re-acquires m before returning.</td>
+</tr>
+<tr>
+<td>Why must you re-check the condition in a while loop?</td>
+<td><abbr title="A signal is only a hint; the woken thread must re-check its condition (use while)">Mesa semantics</abbr>: the <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr> is only a hint and the state may change before the woken <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> runs; spurious wakeups can also happen.</td>
+</tr>
+<tr>
+<td>Why do we need a state variable along with a <abbr title="Condition variable — a queue threads wait on until some state changes">CV</abbr>?</td>
+<td><abbr title="Condition variables — queues threads wait on until some state changes">CVs</abbr> have no memory. If <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr> happens before wait, it's lost; the state variable records that the condition already holds.</td>
+</tr>
+<tr>
+<td>Why does <abbr title="Bounded-buffer problem: producers add items, consumers remove them, sharing a fixed-size buffer">producer/consumer</abbr> need two <abbr title="Queues threads wait on until some state changes; used with a lock and a state variable">condition variables</abbr>?</td>
+<td>So a consumer only wakes producers and a producer only wakes consumers; with one <abbr title="Condition variable — a queue threads wait on until some state changes">CV</abbr> a consumer can wake another consumer and everyone sleeps.</td>
+</tr>
+<tr>
+<td>What is a <abbr title="Waking all waiters (broadcast) when you can't tell which one should run">covering condition</abbr>?</td>
+<td>Using broadcast to wake all waiters when you can't tell which one should proceed; each re-checks its condition.</td>
+</tr>
+<tr>
+<td>Mesa vs <abbr title="The signalled thread runs immediately with the condition guaranteed">Hoare semantics</abbr>?</td>
+<td>Mesa: <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr> is a hint; the woken <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> runs later and must re-check. Hoare: the woken <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> runs immediately with the guarantee. Real systems use Mesa.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../concurrency/l17-semaphores/">L17 · Semaphores</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What do sem_wait and sem_post do?</td>
+<td>sem_wait decrements and sleeps if the value is negative; sem_post increments and wakes one waiter if any. Both are <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>.</td>
+</tr>
+<tr>
+<td>What does a negative <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> value mean?</td>
+<td>Its magnitude is the number of <abbr title="Execution streams sharing one address space, each with its own registers and stack">threads</abbr> waiting.</td>
+</tr>
+<tr>
+<td>What initial value makes a <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> a lock? For ordering?</td>
+<td>1 for a lock (<abbr title="A semaphore initialised to 1, used as a lock">binary semaphore</abbr>); 0 for ordering (wait until another <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> posts).</td>
+</tr>
+<tr>
+<td>Why must the <abbr title="A lock providing mutual exclusion">mutex</abbr> be acquired inside wait(empty)/wait(full) in <abbr title="Bounded-buffer problem: producers add items, consumers remove them, sharing a fixed-size buffer">producer/consumer</abbr>?</td>
+<td>Otherwise a <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr> can sleep on full/empty while holding the <abbr title="A lock providing mutual exclusion">mutex</abbr>, so the other side can never get the <abbr title="A lock providing mutual exclusion">mutex</abbr> to post — <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>.</td>
+</tr>
+<tr>
+<td>How does a <abbr title="Lock allowing many readers or one writer at a time">reader-writer lock</abbr> work and what's its weakness?</td>
+<td>The first reader takes the write lock, the last reader releases it; writers need the write lock. Readers can starve writers.</td>
+</tr>
+<tr>
+<td>How do you avoid <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> in <abbr title="Classic problem: five philosophers, five forks; shows how circular waiting deadlocks">dining philosophers</abbr>?</td>
+<td>Make one philosopher acquire forks in the opposite order, breaking the <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>.</td>
+</tr>
+<tr>
+<td>Key difference between a <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> and a <abbr title="A queue threads wait on until some state changes; used with a lock and a state variable">condition variable</abbr>?</td>
+<td>A <abbr title="Integer with atomic wait (decrement, sleep if negative) and post (increment, wake one)">semaphore</abbr> has state (its count), so a post before a wait isn't lost; a <abbr title="Condition variable — a queue threads wait on until some state changes">CV</abbr> <abbr title="A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default">signal</abbr> with no waiter is lost.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../concurrency/l18-deadlock/">L18 · Concurrency bugs, <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> &amp; event-based <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr></a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What are the two main kinds of non-<abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> <abbr title="Many things in progress at once (threads, interrupts) that must not corrupt shared data">concurrency</abbr> bugs?</td>
+<td>Atomicity violations (a sequence assumed <abbr title="All or nothing — can't be interrupted partway">atomic</abbr> isn't) and order violations (an assumed ordering isn't enforced).</td>
+</tr>
+<tr>
+<td>List the four conditions for <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>.</td>
+<td>Mutual exclusion, <abbr title="Holding one resource while waiting for another — a deadlock condition">hold-and-wait</abbr>, no preemption, <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr>.</td>
+</tr>
+<tr>
+<td>What is the most practical way to prevent <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr>?</td>
+<td>Break <abbr title="A cycle of threads, each waiting for a resource the next one holds — a deadlock condition">circular wait</abbr> by acquiring locks in a fixed global order (e.g. by address).</td>
+</tr>
+<tr>
+<td>What's <abbr title="Threads keep acting (e.g. retrying) but none makes progress">livelock</abbr> and how do you reduce it?</td>
+<td>Threads keep failing trylock, releasing and retrying without progress. Add a random delay before retrying.</td>
+</tr>
+<tr>
+<td>Prevention vs avoidance vs detection?</td>
+<td>Prevention: design so a <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> condition can't hold. Avoidance: schedule so <abbr title="Threads each hold a resource and wait for another's, so none can proceed">deadlock</abbr> can't happen given known lock needs. Detection: let it happen, find cycles, recover.</td>
+</tr>
+<tr>
+<td>Why must event handlers never <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>?</td>
+<td>There's one <abbr title="An execution stream sharing its process's address space, with its own registers and stack">thread</abbr>; a blocking call stops the whole server from handling any other event.</td>
+</tr>
+<tr>
+<td>What's a <abbr title="State saved so an event's handling can resume later, e.g. after async I/O">continuation</abbr> in event-based programming?</td>
+<td>Saved state needed to finish handling an event later, e.g. after <abbr title="I/O that returns immediately; completion is checked later or signalled">async I/O</abbr> completes.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="persistence">Persistence<a class="headerlink" href="#persistence" title="Permanent link">&para;</a></h3>
+<p><strong><a href="../../persistence/l19-io/">L19 · I/O devices</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What are the three <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr> of the canonical device interface?</td>
+<td>Status, command, data.</td>
+</tr>
+<tr>
+<td>When is <abbr title="Repeatedly checking a device's status register until it's ready">polling</abbr> better than <abbr title="Hardware signals that make the CPU run an OS handler">interrupts</abbr>?</td>
+<td>When the device is fast, so the first poll usually finds it done; <abbr title="A hardware signal that makes the CPU run an OS handler">interrupt</abbr> handling and context switching would cost more.</td>
+</tr>
+<tr>
+<td>What is <abbr title="A hardware signal that makes the CPU run an OS handler">interrupt</abbr> <abbr title="Threads keep acting (e.g. retrying) but none makes progress">livelock</abbr>?</td>
+<td>A flood of <abbr title="Hardware signals that make the CPU run an OS handler">interrupts</abbr> (e.g. network packets) keeps the CPU busy handling <abbr title="Hardware signals that make the CPU run an OS handler">interrupts</abbr> so no real work gets done.</td>
+</tr>
+<tr>
+<td>What does <abbr title="Direct memory access — a device engine copies data to or from memory without the CPU">DMA</abbr> do?</td>
+<td>A <abbr title="Direct memory access — a device engine copies data to or from memory without the CPU">DMA</abbr> engine transfers data between memory and a device without the CPU copying it, then raises an <abbr title="A hardware signal that makes the CPU run an OS handler">interrupt</abbr> when finished.</td>
+</tr>
+<tr>
+<td>Two ways the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> can access device <abbr title="Tiny, very fast storage slots inside the CPU (or a device), each holding one value">registers</abbr>?</td>
+<td>Privileged I/O <abbr title="Basic CPU operations, such as load, add or store">instructions</abbr> (in/out) or <abbr title="Device registers appear at memory addresses; ordinary loads and stores reach them">memory-mapped I/O</abbr>.</td>
+</tr>
+<tr>
+<td>Why are <abbr title="OS code that knows how to operate specific devices">device drivers</abbr> a reliability problem?</td>
+<td>They make up most of the <abbr title="The core of the OS that runs in privileged (kernel) mode">kernel</abbr>'s code (~70% of Linux), are often written by less experienced developers, and run in <abbr title="Privileged CPU mode in which the OS runs and can do anything">kernel mode</abbr>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l20-disks/">L20 · Hard disks (and <abbr title="Solid-state drives — flash storage with no moving parts">SSDs</abbr> in brief)</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What's the disk I/O time formula?</td>
+<td>T_I/O = T_seek + T_rotation + T_transfer.</td>
+</tr>
+<tr>
+<td>Average <abbr title="Waiting for the wanted sector to rotate under the head">rotational delay</abbr> at 15,000 RPM?</td>
+<td>One rotation = 4 ms, so average = 2 ms (half a rotation).</td>
+</tr>
+<tr>
+<td>Roughly how much faster is sequential than random I/O on a hard disk?</td>
+<td>About 200–300×, e.g. 125 MB/s vs 0.66 MB/s.</td>
+</tr>
+<tr>
+<td>What's the problem with <abbr title="Shortest Seek Time First — serve the request on the nearest track">SSTF</abbr>?</td>
+<td>Starvation of requests on far tracks; it also ignores <abbr title="Waiting for the wanted sector to rotate under the head">rotational delay</abbr>.</td>
+</tr>
+<tr>
+<td>What does <abbr title="Shortest Positioning Time First — pick the request with least seek + rotation; done inside the drive">SPTF</abbr> do differently, and where is it implemented?</td>
+<td>Picks the request with the least <abbr title="Moving the disk arm to the right track">seek</abbr> + rotation time; implemented inside the drive, which knows the head position and geometry.</td>
+</tr>
+<tr>
+<td>What write is guaranteed <abbr title="All or nothing — can't be interrupted partway">atomic</abbr> on a disk?</td>
+<td>A single 512-byte <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr> write.</td>
+</tr>
+<tr>
+<td>Why do <abbr title="Solid-state drives — flash storage with no moving parts">SSDs</abbr> need a flash translation layer?</td>
+<td>Flash must erase whole <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> before reprogramming pages and <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> wear out, so the <abbr title="Flash translation layer — maps logical blocks to flash pages, writing log-style">FTL</abbr> remaps writes log-style to fresh pages, garbage-collects and wear-levels.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l21-raid/">L21 · <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr></a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What does <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-0 provide and not provide?</td>
+<td>Striping for full capacity and performance; no redundancy (any failure loses data).</td>
+</tr>
+<tr>
+<td>How does <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> let <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4/5 recover a failed disk?</td>
+<td>Parity is the <abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr> of the stripe's data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>; <abbr title="Exclusive OR — 1 if the two bits differ, 0 if they match">XOR</abbr>-ing the surviving <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> and <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> reconstructs the missing one.</td>
+</tr>
+<tr>
+<td>How many I/Os does a small write need in <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4/5, and why?</td>
+<td>Four: read old data and old <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>, write new data and new <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> (subtractive <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr>).</td>
+</tr>
+<tr>
+<td>Why is <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4 slow for small random writes?</td>
+<td>Every write must update the single <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> disk, which serializes all writes (total R/2).</td>
+</tr>
+<tr>
+<td>How does <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5 fix <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4's problem?</td>
+<td>It rotates <abbr title="XOR of a stripe's data blocks; lets one lost block be rebuilt">parity</abbr> across all disks, so small writes to different stripes can proceed in parallel (N/4·R).</td>
+</tr>
+<tr>
+<td>Why is <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1's sequential read only N/2·S?</td>
+<td>Each disk serves every other <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>; it rotates past <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> its mirror is serving, so it delivers only half its bandwidth.</td>
+</tr>
+<tr>
+<td>Capacity of <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1, <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4, <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5 with N disks of B <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>?</td>
+<td><abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-1: N·B/2. <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-4 and <abbr title="Redundant Array of Inexpensive Disks — many disks presented as one">RAID</abbr>-5: (N−1)·B.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l22-files-api/">L22 · Files &amp; directories (the API)</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What is an <abbr title="The file's low-level name; locates its inode">inode number</abbr>?</td>
+<td>The file's low-level name; the file system uses it to find the <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (<abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> and <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> <abbr title="Variables that hold memory addresses">pointers</abbr>).</td>
+</tr>
+<tr>
+<td>What does a directory contain?</td>
+<td>A list of (name, <abbr title="The file's low-level name; locates its inode">inode number</abbr>) pairs, including "." and "..".</td>
+</tr>
+<tr>
+<td>When do two <abbr title="Small integers a process uses to refer to open files (0 stdin, 1 stdout, 2 stderr)">file descriptors</abbr> share an offset?</td>
+<td>When they refer to the same open-file-table entry: after fork() or dup(). Separate open() calls get separate offsets.</td>
+</tr>
+<tr>
+<td>Why call fsync()?</td>
+<td>write() buffers data in memory; fsync forces it (and <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr>) to persistent storage.</td>
+</tr>
+<tr>
+<td>How do you update a file atomically?</td>
+<td>Write a temporary file, fsync it, then rename() it over the original; rename is <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>.</td>
+</tr>
+<tr>
+<td>Hard link vs <abbr title="A small file containing a path to another file; can dangle">symbolic link</abbr>?</td>
+<td>Hard link: another name for the same <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (refcount). Symlink: a file containing a path; can cross file systems and point to directories, but can dangle.</td>
+</tr>
+<tr>
+<td>Why is the call to remove a file named unlink()?</td>
+<td>It removes one name (link) to the <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>; the file is freed only when the link count drops to zero.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l23-vsfs/">L23 · File system implementation (<abbr title="Very Simple File System — OSTEP's teaching file system">VSFS</abbr>)</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name the five regions of <abbr title="Very Simple File System — OSTEP's teaching file system">VSFS</abbr>'s on-disk layout.</td>
+<td>Superblock, <abbr title="One bit per inode: free or in use">inode bitmap</abbr>, <abbr title="One bit per data block: free or in use">data bitmap</abbr>, <abbr title="The on-disk array of inodes">inode table</abbr>, data region.</td>
+</tr>
+<tr>
+<td>What's in an <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>?</td>
+<td>Metadata (type, size, owner, permissions, times, link count, <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> count) and <abbr title="Variables that hold memory addresses">pointers</abbr> to data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</td>
+</tr>
+<tr>
+<td>Max file size with 12 <abbr title="Inode pointers straight to data blocks">direct pointers</abbr>, one <abbr title="A block full of pointers to data blocks, referenced from the inode">indirect block</abbr>, 4 KB <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>, 4-byte <abbr title="Variables that hold memory addresses">pointers</abbr>?</td>
+<td>(12 + 1024) × 4 KB = 4144 KB ≈ 4 MB.</td>
+</tr>
+<tr>
+<td>Why does a multi-level (imbalanced) tree make sense for <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr>?</td>
+<td>Most files are small and fit in <abbr title="Inode pointers straight to data blocks">direct pointers</abbr>; the rare large files use indirect <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</td>
+</tr>
+<tr>
+<td>How many reads to open /foo/bar (no <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>)?</td>
+<td>Five: root <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, root data, foo <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, foo data, bar <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>.</td>
+</tr>
+<tr>
+<td>Why does reading a file cause a write?</td>
+<td>The <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>'s last-access time must be updated.</td>
+</tr>
+<tr>
+<td>Three benefits of <abbr title="Delaying writes in memory (5–30 s) to batch and schedule them">write buffering</abbr>?</td>
+<td>Batching updates into fewer I/Os, better scheduling of writes, and avoiding writes entirely for short-lived files.</td>
+</tr>
+<tr>
+<td>Extents vs <abbr title="Variables that hold memory addresses">pointers</abbr>?</td>
+<td>An <abbr title="A disk pointer plus a length, describing a contiguous run of blocks">extent</abbr> is a start <abbr title="A variable that holds a memory address">pointer</abbr> plus a length, describing a contiguous run with little <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr>; <abbr title="Variables that hold memory addresses">pointers</abbr> name each <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> but are more flexible.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l24-ffs/">L24 · <abbr title="Fast File System — disk-aware UNIX file system using cylinder groups">FFS</abbr>: <abbr title="Programs tend to reuse recent data (temporal) and nearby data (spatial)">locality</abbr> and the Fast File System</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Why was the original UNIX file system so slow?</td>
+<td>It ignored disk geometry: <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> far from data (long seeks), a fragmented <abbr title="A list of the free chunks of memory or disk">free list</abbr>, and tiny 512-byte <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</td>
+</tr>
+<tr>
+<td>What is a cylinder (<abbr title="The file system's unit of storage, typically 4 KB">block</abbr>) group?</td>
+<td>A contiguous region of the disk with its own copy of the <abbr title="Block describing the whole file system: sizes, where structures start, magic number">superblock</abbr>, <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> and data bitmaps, <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> and data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</td>
+</tr>
+<tr>
+<td>Where does <abbr title="Fast File System — disk-aware UNIX file system using cylinder groups">FFS</abbr> place a new file and a new directory?</td>
+<td>File: same group as its parent directory, with its data near its <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>. Directory: a group with few directories and many free <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr>.</td>
+</tr>
+<tr>
+<td>Why does <abbr title="Fast File System — disk-aware UNIX file system using cylinder groups">FFS</abbr> spread large files across groups?</td>
+<td>So one big file doesn't fill a group and destroy <abbr title="Programs tend to reuse recent data (temporal) and nearby data (spatial)">locality</abbr> for other related files; chunks are large enough to amortise the seeks.</td>
+</tr>
+<tr>
+<td>What are <abbr title="512-byte allocations FFS uses for small files">sub-blocks</abbr> for?</td>
+<td>512-byte allocations for small files to avoid <abbr title="Wasted space inside an allocated unit (e.g. unused part of a page or block)">internal fragmentation</abbr> with 4 KB <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l25-journaling/">L25 · Crash consistency: <abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr> &amp; <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr></a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Which three <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> must be written to append one data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>?</td>
+<td>The <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, the <abbr title="One bit per data block: free or in use">data bitmap</abbr>, and the data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>.</td>
+</tr>
+<tr>
+<td>What's the main drawback of <abbr title="File system checker — scans the whole disk after a crash and repairs metadata">fsck</abbr>?</td>
+<td>It scans the entire disk, so recovery takes time proportional to disk size — far too slow for large disks.</td>
+</tr>
+<tr>
+<td>List the steps of <abbr title="Journal both data and metadata — strongest, but data is written twice">data journaling</abbr>.</td>
+<td>Journal write (<abbr title="Transaction begin block in the journal">TxB</abbr> + contents), <abbr title="The on-disk log used by journaling">journal</abbr> commit (<abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr>), <abbr title="Writing journaled updates to their final on-disk locations">checkpoint</abbr> (write in place), free the <abbr title="The on-disk log used by journaling">journal</abbr> space.</td>
+</tr>
+<tr>
+<td>Why must <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> be written separately, after the rest?</td>
+<td>The disk can reorder writes; if <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> lands first and the crash hits, recovery could replay garbage. <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> fits in one <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr>, so its write is <abbr title="All or nothing — can't be interrupted partway">atomic</abbr>.</td>
+</tr>
+<tr>
+<td>What does recovery do with the <abbr title="The on-disk log used by journaling">journal</abbr>?</td>
+<td>Replays (redoes) every committed transaction — those with a <abbr title="Transaction end (commit) block in the journal; a single sector, so written atomically">TxE</abbr> — and ignores incomplete ones.</td>
+</tr>
+<tr>
+<td>In ordered <abbr title="Journal only metadata; write data in place first (ordered mode)">metadata journaling</abbr>, when is user data written?</td>
+<td>To its final location before the <abbr title="The on-disk log used by journaling">journal</abbr> commit, so <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> never points to garbage.</td>
+</tr>
+<tr>
+<td>What rule underlies crash-consistent write ordering?</td>
+<td>Write the pointed-to object before the object that points to it.</td>
+</tr>
+<tr>
+<td>Why do <abbr title="Journal only metadata; write data in place first (ordered mode)">metadata journaling</abbr> instead of <abbr title="Journal both data and metadata — strongest, but data is written twice">data journaling</abbr>?</td>
+<td>Data <abbr title="Write-ahead logging: record intended updates in a log before writing them in place">journaling</abbr> writes all data twice, halving write bandwidth; <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> is small.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><a href="../../persistence/l26-lfs-integrity/">L26 · Log-structured file systems &amp; data integrity</a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What's the core idea of <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr>?</td>
+<td>Buffer all updates (data and <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr>) in memory and write them sequentially as large segments to free space; never overwrite in place.</td>
+</tr>
+<tr>
+<td>Why does <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr> need an <abbr title="Gives the current disk address of each inode in LFS">inode map</abbr>?</td>
+<td>Inodes move every time they're written, so the <abbr title="Inode map — gives the current disk address of each inode in LFS">imap</abbr> records each <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>'s current location.</td>
+</tr>
+<tr>
+<td>How does <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr> find the <abbr title="Inode map — gives the current disk address of each inode in LFS">imap</abbr>?</td>
+<td>Through the <abbr title="LFS's fixed location that points to the latest pieces of the inode map">checkpoint region</abbr>, a fixed location that points to the latest <abbr title="Inode map — gives the current disk address of each inode in LFS">imap</abbr> pieces; it's updated periodically.</td>
+</tr>
+<tr>
+<td>How does the <abbr title="Log-structured file system — buffer all writes and write them sequentially as segments">LFS</abbr> <abbr title="LFS garbage collector: compacts live blocks from old segments">cleaner</abbr> decide if a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> is live?</td>
+<td>The <abbr title="Records the inode number and offset of each block in an LFS segment">segment summary block</abbr> gives the <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>'s <abbr title="The file's low-level name; locates its inode">inode number</abbr> and offset; if that <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (via the <abbr title="Inode map — gives the current disk address of each inode in LFS">imap</abbr>) still points to this address, it's live.</td>
+</tr>
+<tr>
+<td>What is a <abbr title="The disk detects a bad sector and returns an error">latent sector error</abbr> vs <abbr title="The disk returns wrong data without reporting an error">silent corruption</abbr>?</td>
+<td><abbr title="Latent sector error — the disk detects a bad sector and returns an error">LSE</abbr>: the disk detects the bad <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr> and returns an error. Silent corruption: the disk returns wrong data with no error.</td>
+</tr>
+<tr>
+<td>How do you detect misdirected writes?</td>
+<td>Store the disk and <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr> address alongside the <abbr title="Small value computed from data to detect corruption">checksum</abbr> and verify it on read.</td>
+</tr>
+<tr>
+<td>What is disk <abbr title="Periodically reading all blocks to check checksums">scrubbing</abbr>?</td>
+<td>Periodically reading all <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> and verifying <abbr title="Small values computed from data to detect corruption">checksums</abbr> to find corruption early.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="distribution">Distribution<a class="headerlink" href="#distribution" title="Permanent link">&para;</a></h3>
+<p><strong><a href="../../distribution/l27-dfs/">L27 · Distributed systems, <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> &amp; <abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr></a></strong></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How do you build reliable communication over an unreliable network?</td>
+<td>Acknowledgements, timeouts with retries, and sequence numbers to detect duplicates (plus <abbr title="Small values computed from data to detect corruption">checksums</abbr> for corruption).</td>
+</tr>
+<tr>
+<td>What does an <abbr title="Remote procedure call — makes a call to another machine look like a local function call">RPC</abbr> <abbr title="Generated RPC code that marshals arguments and sends the message">stub</abbr> do?</td>
+<td>Marshals arguments into a message, sends it, waits for the reply and unmarshals the result, so a remote call looks like a local one.</td>
+</tr>
+<tr>
+<td>Why is <abbr title="Version 2 of Sun's Network File System — stateless protocol">NFSv2</abbr> <abbr title="The server keeps no per-client state; every request carries all it needs">stateless</abbr>, and what does that buy?</td>
+<td>Every request carries all needed information, so after a server crash clients simply retry — no state to rebuild.</td>
+</tr>
+<tr>
+<td>What's in an <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> <abbr title="NFS file identifier: volume ID + inode number + generation number">file handle</abbr>?</td>
+<td>Volume ID, <abbr title="The file's low-level name; locates its inode">inode number</abbr>, generation number.</td>
+</tr>
+<tr>
+<td>What does <abbr title="Doing an operation twice has the same effect as doing it once">idempotent</abbr> mean, and why does <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> need it?</td>
+<td>Performing an operation more than once has the same effect as once; it makes retrying after timeouts safe.</td>
+</tr>
+<tr>
+<td>What are the two <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr>-consistency problems?</td>
+<td>Update visibility (when do others see my writes) and stale <abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> (is my cached copy out of date).</td>
+</tr>
+<tr>
+<td>What is an <abbr title="Andrew File System — whole-file caching with server callbacks">AFS</abbr> <abbr title="A server's promise to tell a client when a file it caches changes">callback</abbr>?</td>
+<td>A promise from the server to notify a client when a file it caches is modified, so the client needn't ask the server on each open.</td>
+</tr>
+<tr>
+<td>Why must an <abbr title="Network File System (Sun) — stateless distributed file system">NFS</abbr> server commit writes to disk before replying?</td>
+<td>If it replied first and crashed, the client would think the data was safe when it was lost.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../drills/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Mixed recall drills">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Mixed recall drills
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../glossary/" class="md-footer__link md-footer__link--next" aria-label="Next: Glossary">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Glossary
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>

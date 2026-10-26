@@ -1,0 +1,2606 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn 80% of "Operating Systems — Three Easy Pieces" with 20% of the effort. Chapter-wise lessons, diagrams and a built-in recall system.">
+      
+      
+      
+      
+        <link rel="prev" href="../l22-files-api/">
+      
+      
+        <link rel="next" href="../l24-ffs/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>L23 · File system implementation - OS Step by Step</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/terms.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#l23-file-system-implementation-vsfs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OS Step by Step" class="md-header__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OS Step by Step
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              L23 · File system implementation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../virtualization/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Virtualization
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../concurrency/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concurrency
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Persistence
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../distribution/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Distribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../review/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Review
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OS Step by Step" class="md-nav__button md-logo" aria-label="OS Step by Step" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 4h12v1h3v2h-3v2h3v2h-3v2h3v2h-3v2h3v2h-3v1H6v-1H3v-2h3v-2H3v-2h3v-2H3V9h3V7H3V5h3zm5 11v3h1v-3zm2 0v3h1v-3zm2 0v3h1v-3z"/></svg>
+
+    </a>
+    OS Step by Step
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../start/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/background/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Background you need
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/80-20-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 80/20 map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/recall-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The recall system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3-week plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../virtualization/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Virtualization
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Virtualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l01-intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L01 · Intro & the 3 pieces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l02-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L02 · Processes & fork/exec/wait
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l03-lde/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L03 · Limited direct execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l04-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L04 · Scheduling basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l05-mlfq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L05 · MLFQ, lottery, multi-CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l06-address-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L06 · Address spaces & malloc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l07-segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L07 · Base/bounds & segmentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l08-free-space/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L08 · Free-space management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l09-paging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L09 · Paging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l10-tlb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L10 · TLBs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l11-smaller-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L11 · Smaller page tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../virtualization/l12-swapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L12 · Swapping & replacement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concurrency
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l13-threads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L13 · Threads & races
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l14-locks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L14 · Locks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l15-concurrent-ds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L15 · Concurrent data structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l16-condvars/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L16 · Condition variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l17-semaphores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L17 · Semaphores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/l18-deadlock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L18 · Bugs, deadlock & events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Persistence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l19-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L19 · I/O devices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l20-disks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L20 · Hard disks & SSDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l21-raid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L21 · RAID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l22-files-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L22 · Files & directories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L23 · File system implementation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#on-disk-layout-64-blocks-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On-disk layout (64 blocks example)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-inode-number-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding inode number i
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-multi-level-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The multi-level index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-paths-count-the-ios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access paths — count the I/Os
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching-buffering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching &amp; buffering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l24-ffs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L24 · FFS & locality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l25-journaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L25 · Crash consistency
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../l26-lfs-integrity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L26 · LFS & data integrity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../distribution/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Distribution
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Distribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../distribution/l27-dfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L27 · Distributed systems, NFS, AFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../review/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    One-page cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/chain-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The big chain map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/drills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixed recall drills
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/flashcards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flashcards (Anki)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-the-3-things-to-remember" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR (the 3 things to remember)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The big question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-story-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The story chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core ideas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core ideas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#on-disk-layout-64-blocks-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On-disk layout (64 blocks example)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-inode-number-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding inode number i
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-multi-level-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The multi-level index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-paths-count-the-ios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access paths — count the I/Os
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching-buffering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching &amp; buffering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common mistakes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connects-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connects to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-in-the-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read in the book
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="l23-file-system-implementation-vsfs">L23 · File system implementation (<abbr title="Very Simple File System — OSTEP's teaching file system">VSFS</abbr>)<a class="headerlink" href="#l23-file-system-implementation-vsfs" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Book:</strong> Ch 40 (pp. 477–493) · <strong>Priority:</strong> 🔴 must-know · <strong>Time:</strong> 55 min · <strong>Simulator:</strong> <code>file-implementation/vsfs.py</code></p>
+</blockquote>
+<div class="admonition example">
+<p class="admonition-title">In plain words</p>
+<p>The disk is a giant shelf of numbered <strong><abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr></strong> (4 KB each). A simple file system splits it into zones:</p>
+<ul>
+<li><strong>Superblock:</strong> the label on the shelf. How big it is and where everything starts.</li>
+<li><strong>Bitmaps:</strong> two checklists of which <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> and which data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> are free.</li>
+<li><strong>Inode table:</strong> one card per file, with its size, owner, times and <em>which <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> hold its data</em>.</li>
+<li><strong>Data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>:</strong> the actual contents.</li>
+</ul>
+<p>Opening <code>/home/notes.txt</code> means: read the root folder's card → find "home" → read home's card → find "notes.txt" → read its card → now you know where the data is. That's several disk reads, which is why the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> caches heavily in memory.</p>
+</div>
+<h2 id="tldr-the-3-things-to-remember">TL;DR (the 3 things to remember)<a class="headerlink" href="#tldr-the-3-things-to-remember" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A simple file system divides the disk into <strong><abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr></strong> (4 KB): <strong><abbr title="Block describing the whole file system: sizes, where structures start, magic number">superblock</abbr></strong> · <strong><abbr title="One bit per inode: free or in use">inode bitmap</abbr></strong> · <strong><abbr title="One bit per data block: free or in use">data bitmap</abbr></strong> · <strong><abbr title="The on-disk array of inodes">inode table</abbr></strong> · <strong>data region</strong>.</li>
+<li>An <strong><abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr></strong> holds <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr> and <abbr title="Variables that hold memory addresses">pointers</abbr> to data: <strong><abbr title="Inode pointers straight to data blocks">direct pointers</abbr></strong>, then <strong>indirect</strong> (and double/triple indirect) <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> — a tree tuned for "most files are small".</li>
+<li>Opening <code>/foo/bar</code> reads the root <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, root data, foo's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, foo's data, bar's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> — one hop per path component. <strong>Caching</strong> (<abbr title="Memory cache of file blocks and pages, shared by the file system and VM">page cache</abbr>) hides reads; <strong><abbr title="Delaying writes in memory (5–30 s) to batch and schedule them">write buffering</abbr></strong> batches writes.</li>
+</ul>
+<h2 id="the-big-question">The big question<a class="headerlink" href="#the-big-question" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>How can we build a simple file system? What structures are needed on disk, and what do they <abbr title="One concentric ring of sectors on a disk surface">track</abbr>?</p>
+</blockquote>
+<h2 id="the-story-chain">The story chain<a class="headerlink" href="#the-story-chain" title="Permanent link">&para;</a></h2>
+<p><small>Key: <strong>bold</strong> = the problem or the final design · <em>italics</em> = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small></p>
+<p><strong>Need to <abbr title="CPU instruction that writes a register's value to memory">store</abbr> files on a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> device</strong> → <em>data region + <abbr title="The on-disk array of inodes">inode table</abbr></em> → <em><abbr title="One concentric ring of sectors on a disk surface">track</abbr> what's free: bitmaps</em> → <em><abbr title="Block describing the whole file system: sizes, where structures start, magic number">superblock</abbr> describes the layout</em> → <em><abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> needs to point to <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr></em> → <em>a few <abbr title="Inode pointers straight to data blocks">direct pointers</abbr></em> → ❌ big files → <em>indirect <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> (then double/triple)</em> → <em>directories are files of (name, inum)</em> → ❌ every open/read/write costs several I/Os → <em><abbr title="Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower">cache</abbr> <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> in memory (unified <abbr title="Memory cache of file blocks and pages, shared by the file system and VM">page cache</abbr>)</em> + <em>delay and batch writes (5–30 s)</em> → ❌ batching risks data loss on crash → fsync, and <abbr title="Keeping on-disk structures consistent despite crashes mid-update">crash consistency</abbr> (<a href="../l25-journaling/">L25</a>).</p>
+<h2 id="core-ideas">Core ideas<a class="headerlink" href="#core-ideas" title="Permanent link">&para;</a></h2>
+<h3 id="on-disk-layout-64-blocks-example">On-disk layout (64 <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> example)<a class="headerlink" href="#on-disk-layout-64-blocks-example" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    S["S&lt;br/&gt;superblock&lt;br/&gt;(block 0)"] --- IB["i&lt;br/&gt;inode&lt;br/&gt;bitmap"] --- DB["d&lt;br/&gt;data&lt;br/&gt;bitmap"] --- IT["I I I I I&lt;br/&gt;inode table&lt;br/&gt;(blocks 3–7)"] --- D["D D D … D&lt;br/&gt;data region&lt;br/&gt;(blocks 8–63)"]</code></pre>
+<ul>
+<li>4 KB <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>, 256-byte <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> → 16 <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> per <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> → 5 <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> = <strong>80 <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr></strong> max.</li>
+<li>Superblock: number of <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> and data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>, where the <abbr title="The on-disk array of inodes">inode table</abbr> starts, a <strong>magic number</strong>.</li>
+</ul>
+<h3 id="finding-inode-number-i">Finding <abbr title="The file's low-level name; locates its inode">inode number</abbr> i<a class="headerlink" href="#finding-inode-number-i" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>block  = (i * sizeof(inode)) / blockSize
+sector = ((block * blockSize) + inodeStartAddr) / sectorSize
+</code></pre></div>
+Because every <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> is the same size and they sit in one table, finding <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> <em>i</em> is simple arithmetic: (start of table) + <em>i</em> × (size of one <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>).</p>
+<p><em>Example:</em> <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> are 256 bytes each and the <abbr title="The on-disk array of inodes">inode table</abbr> starts 12 KB into the disk. Inode 32 is 32 × 256 = 8 KB into the table, so it's at 12 + 8 = <strong>20 KB</strong> from the start of the disk. Disks work in 512-byte sectors, so that's <abbr title="The disk's unit of storage, 512 bytes; a single sector write is atomic">sector</abbr> 20 × 1024 ÷ 512 = <strong>40</strong>.</p>
+<h3 id="the-multi-level-index">The multi-level index<a class="headerlink" href="#the-multi-level-index" title="Permanent link">&para;</a></h3>
+<p>How does an <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> record which <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> hold the file's data? With <strong><abbr title="Variables that hold memory addresses">pointers</abbr></strong> (<abbr title="The file system's unit of storage, typically 4 KB">block</abbr> numbers):</p>
+<ul>
+<li><strong>Direct <abbr title="Variables that hold memory addresses">pointers</abbr>:</strong> the <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> itself holds, say, 12 <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> numbers. 12 × 4 KB = enough for files up to <strong>48 KB</strong>.</li>
+<li><strong>Single indirect <abbr title="A variable that holds a memory address">pointer</abbr>:</strong> for bigger files, one more <abbr title="A variable that holds a memory address">pointer</abbr> leads to a whole <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> that is <em>full of <abbr title="Variables that hold memory addresses">pointers</abbr></em>. A 4 KB <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> holds 4096 ÷ 4 = <strong>1024</strong> <abbr title="Variables that hold memory addresses">pointers</abbr>, which adds 1024 × 4 KB = <strong>4 MB</strong>.</li>
+<li><strong>Double indirect:</strong> a <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> of <abbr title="Variables that hold memory addresses">pointers</abbr> to <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> of <abbr title="Variables that hold memory addresses">pointers</abbr>: 1024 × 1024 more <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>, about <strong>4 GB</strong>. <strong>Triple indirect:</strong> about <strong>4 TB</strong>.</li>
+</ul>
+<p>It's lopsided on purpose: <strong>most files are small</strong> (a typical file is about 2 KB), so they use only the fast <abbr title="Inode pointers straight to data blocks">direct pointers</abbr>, while the rare huge files pay for the extra hops.</p>
+<p>Other designs: <strong><abbr title="Disk pointers plus lengths, each describing a contiguous run of blocks">extents</abbr></strong> <abbr title="CPU instruction that writes a register's value to memory">store</abbr> "start at <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> X, run for N <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>" — compact for files stored contiguously (used by ext4 and XFS). The old <strong>FAT</strong> file system (USB sticks) links each <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> to the next like a chain, which makes jumping into the middle of a file slow.</p>
+<h3 id="directories">Directories<a class="headerlink" href="#directories" title="Permanent link">&para;</a></h3>
+<p>A directory is just a special file whose contents are a list of entries. Each entry holds: the <abbr title="The file's low-level name; locates its inode">inode number</abbr>, the entry's length, the name's length, and the name. For example <code>(5, 12, 3, "foo")</code>. Every directory also has <code>.</code> (itself) and <code>..</code> (its parent). Deleting a file just marks its entry empty (<abbr title="The file's low-level name; locates its inode">inode number</abbr> 0) so it can be reused. Very large directories may use a search tree instead of a list (XFS uses B-trees).</p>
+<h3 id="access-paths-count-the-ios">Access paths — count the I/Os<a class="headerlink" href="#access-paths-count-the-ios" title="Permanent link">&para;</a></h3>
+<p>Assume nothing is cached in memory yet. <strong>Opening <code>/foo/bar</code> and reading 3 <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> from it:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>I/Os</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>open</code>: read the root directory's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (to find its data) → read the root directory's data (find "foo" → its <abbr title="The file's low-level name; locates its inode">inode number</abbr>) → read foo's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> → read foo's data (find "bar") → read bar's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr></td>
+<td>5 reads</td>
+</tr>
+<tr>
+<td>Each <code>read()</code>: read bar's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (where is the <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>?) → read the data <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> → write bar's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> back (to update its "last accessed" time)</td>
+<td>3 per <abbr title="The file system's unit of storage, typically 4 KB">block</abbr></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Creating and writing a file</strong> costs even more. To create it: find a free <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> (read and write the <abbr title="One bit per inode: free or in use">inode bitmap</abbr>), initialise the new <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, add the name to the directory's data, and update the directory's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>. That's about <strong>10 disk operations</strong>. Then for <em>each</em> new <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> written: find a free <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> (read and write the <abbr title="One bit per data block: free or in use">data bitmap</abbr>), write the data, and update the file's <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>. That's about <strong>5 operations per <abbr title="The file system's unit of storage, typically 4 KB">block</abbr></strong>. This is why caching matters so much.</p>
+<h3 id="caching-buffering">Caching &amp; buffering<a class="headerlink" href="#caching-buffering" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Reading:</strong> the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> keeps recently used <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> (<abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr>, directories, file data) in spare <abbr title="Main memory — fast, but lost when power goes off">RAM</abbr>, called the <strong><abbr title="Memory cache of file blocks and pages, shared by the file system and VM">page cache</abbr></strong>. Open the same file again and most or all of those reads come from memory, with no disk access at all.</li>
+<li><strong>Writing:</strong> the <abbr title="Operating system — software that virtualizes the hardware, manages concurrency and keeps data persistent">OS</abbr> doesn't write immediately. It waits 5–30 seconds (<strong><abbr title="Delaying writes in memory (5–30 s) to batch and schedule them">write buffering</abbr></strong>) because this lets it:<ul>
+<li><strong>batch</strong> — update the <abbr title="One bit per inode or block: free or in use">bitmap</abbr> once for many new <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr> instead of once each;</li>
+<li><strong>schedule</strong> — send the writes in a good order for the disk;</li>
+<li><strong>skip</strong> some entirely — a temporary file created and deleted within those seconds never reaches the disk.</li>
+</ul>
+</li>
+<li>The cost: if the power fails, the last few seconds of writes are lost. Programs that can't accept that (databases) call <code>fsync()</code> to force their data out.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Path lookup walks from the root (<abbr title="The file's low-level name; locates its inode">inode number</abbr> usually <strong>2</strong>) for every component — long paths cost I/Os.</li>
+<li>Reads update the <strong>access time</strong> in the <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr> → reads cause writes (unless <code>noatime</code>).</li>
+<li>Bitmaps are per-<abbr title="The file system's unit of storage, typically 4 KB">block</abbr>, so allocating one <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> = read + write a <abbr title="One bit per inode or block: free or in use">bitmap</abbr> <abbr title="The file system's unit of storage, typically 4 KB">block</abbr>.</li>
+<li>Inode size is fixed; number of <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> is fixed at mkfs time in <abbr title="Very Simple File System — OSTEP's teaching file system">VSFS</abbr> — you can run out of <abbr title="Index nodes — each holds a file's metadata and pointers to its data blocks">inodes</abbr> with free space left.</li>
+</ul>
+<h2 id="recall">Recall<a class="headerlink" href="#recall" title="Permanent link">&para;</a></h2>
+<p><strong>Blurt test</strong> — close this page, then on paper, from memory: draw the layout; compute max file size with 12 direct + 1 indirect; list the 5 reads to open <code>/foo/bar</code>.</p>
+<details>
+<summary>Name the five regions of VSFS's on-disk layout.</summary>
+<p>Superblock, <abbr title="One bit per inode: free or in use">inode bitmap</abbr>, <abbr title="One bit per data block: free or in use">data bitmap</abbr>, <abbr title="The on-disk array of inodes">inode table</abbr>, data region.</p>
+</details>
+<details>
+<summary>What's in an inode?</summary>
+<p>Metadata (type, size, owner, permissions, times, link count, <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> count) and <abbr title="Variables that hold memory addresses">pointers</abbr> to data <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</p>
+</details>
+<details>
+<summary>Max file size with 12 direct pointers, one indirect block, 4 KB blocks, 4-byte pointers?</summary>
+<p>(12 + 1024) × 4 KB = 4144 KB ≈ 4 MB.</p>
+</details>
+<details>
+<summary>Why does a multi-level (imbalanced) tree make sense for inodes?</summary>
+<p>Most files are small and fit in <abbr title="Inode pointers straight to data blocks">direct pointers</abbr>; the rare large files use indirect <abbr title="The file system's units of storage, typically 4 KB each">blocks</abbr>.</p>
+</details>
+<details>
+<summary>How many reads to open /foo/bar (no cache)?</summary>
+<p>Five: root <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, root data, foo <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>, foo data, bar <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>.</p>
+</details>
+<details>
+<summary>Why does reading a file cause a write?</summary>
+<p>The <abbr title="Index node — a file's metadata and pointers to its data blocks">inode</abbr>'s last-access time must be updated.</p>
+</details>
+<details>
+<summary>Three benefits of write buffering?</summary>
+<p>Batching updates into fewer I/Os, better scheduling of writes, and avoiding writes entirely for short-lived files.</p>
+</details>
+<details>
+<summary>Extents vs pointers?</summary>
+<p>An <abbr title="A disk pointer plus a length, describing a contiguous run of blocks">extent</abbr> is a start <abbr title="A variable that holds a memory address">pointer</abbr> plus a length, describing a contiguous run with little <abbr title="Data about data — file size, owner, timestamps, where its blocks are">metadata</abbr>; <abbr title="Variables that hold memory addresses">pointers</abbr> name each <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> but are more flexible.</p>
+</details>
+<p><strong>Explain it out loud (60 seconds, as if to a friend):</strong> "Walk me through every disk access when you create a new file <code>/foo/bar</code> and write one <abbr title="The file system's unit of storage, typically 4 KB">block</abbr> to it."</p>
+<p><strong>Simulator drill</strong> (book's free Python homework tools — see <a href="../../start/recall-system/#four-more-tricks-that-pay-off">the recall system</a>): <code>python3 vsfs.py -n 6 -s 17</code> — infer each operation from the state changes, then <code>-c</code>. Try <code>-r</code> to go the other way.</p>
+<h2 id="connects-to">Connects to<a class="headerlink" href="#connects-to" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The API on top → <a href="../l22-files-api/">L22</a></li>
+<li>Faster layout → <a href="../l24-ffs/">L24 <abbr title="Fast File System — disk-aware UNIX file system using cylinder groups">FFS</abbr></a></li>
+<li>Crash safety → <a href="../l25-journaling/">L25</a></li>
+<li>Indirection trees again → multi-level <abbr title="Per-process structures mapping virtual page numbers to physical frame numbers">page tables</abbr> <a href="../../virtualization/l11-smaller-tables/">L11</a></li>
+</ul>
+<h2 id="read-in-the-book">Read in the book<a class="headerlink" href="#read-in-the-book" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🔴 40.1–40.6 — follow the two access-path timelines (Figures 40.3 and 40.4) step by step.</li>
+<li>🔴 40.7 caching and buffering.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../l22-files-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: L22 · Files &amp; directories">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                L22 · Files & directories
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../l24-ffs/" class="md-footer__link md-footer__link--next" aria-label="Next: L24 · FFS &amp; locality">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                L24 · FFS & locality
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/terms.js"></script>
+      
+    
+  </body>
+</html>
