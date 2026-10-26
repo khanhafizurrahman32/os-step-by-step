@@ -1,18 +1,29 @@
 # L02 · Processes & fork / exec / wait
 
-> **Book:** Ch 4–5 (pp. 25–48) · **Tier:** 🔴 Must · **Time:** 45 min · **Simulators:** `cpu-intro/process-run.py`, `cpu-api/fork.py`
+> **Book:** Ch 4–5 (pp. 25–48) · **Priority:** 🔴 must-know · **Time:** 45 min · **Simulators:** `cpu-intro/process-run.py`, `cpu-api/fork.py`
 
-## TL;DR
+!!! example "In plain words"
+    A **program** is a recipe sitting in a book (a file on disk). A **process** is someone actually cooking that recipe right now. They have ingredients on the counter (memory), are at a particular step (the program counter) and have tools in hand (open files).
+
+    You can have several cooks following the same recipe at once: two terminal windows running the same program are two processes.
+
+    - **fork()** = clone the cook, half-made dish and all.
+    - **exec()** = the clone throws away the recipe and starts a different one.
+    - **wait()** = the original cook waits until the clone is finished.
+
+## TL;DR (the 3 things to remember)
 
 - A **process** is a running program: its memory (address space), its registers (incl. PC and stack pointer) and its open files.
 - A process moves between three main states: **Running ⇄ Ready**, and **Running → Blocked → Ready** when it waits for I/O.
 - UNIX creates processes with **`fork()`** (copy me), **`exec()`** (replace me with another program) and **`wait()`** (let my child finish). Splitting fork from exec is what makes shells powerful.
 
-## The crux
+## The big question
 
 > How do we create and control processes, and how does the OS give the illusion of many CPUs?
 
 ## The story chain
+
+<small>Key: **bold** = the problem or the final design · *italics* = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small>
 
 **Want many programs at once** → *one CPU, one program* → ❌ CPU idles while waiting for disk → *time-share: switch between processes* → need to **save/restore each process's state** → keep it in a **process control block (PCB)** in a **process list** → need an API to create them → **fork + exec + wait**.
 
@@ -20,16 +31,46 @@
 
 ### What makes up a process (machine state)
 
-- **Memory:** code, static data, heap, stack — the address space.
-- **Registers:** program counter (PC), stack pointer, frame pointer, general registers.
-- **I/O state:** list of open files (file descriptors 0, 1, 2 = stdin, stdout, stderr).
+- **Memory** (the address space):
+    - **code** — the program's instructions;
+    - **static data** — global variables, e.g. `int count = 0;` outside any function;
+    - **heap** — memory the program asks for while running (`malloc` in C, `new` in Java);
+    - **stack** — local variables, function arguments and return addresses; it grows on each call and shrinks on return.
+- **Registers** (tiny, super-fast storage inside the CPU):
+    - **program counter (PC)** — address of the next instruction to run;
+    - **stack pointer** — where the top of the stack is right now;
+    - **frame pointer** — where the current function's stack area starts;
+    - general registers — scratch values the code is working on.
+- **I/O state:** the list of open files. Every process starts with three: **0 = stdin** (keyboard input), **1 = stdout** (normal output), **2 = stderr** (error output).
+
+!!! info "Never seen a C `main` before? 30-second detour"
+    A C program starts at `int main(int argc, char *argv[])`. These two parameters carry the **command-line arguments** — the words you typed to start the program.
+
+    - **argc** = *argument count*: how many words.
+    - **argv** = *argument vector*: an array of those words as strings. `argv[0]` is the program's own name.
+
+    Typing `./copy a.txt b.txt` gives **argc = 3** and **argv = ["./copy", "a.txt", "b.txt"]**. (Java's `main(String[] args)` is the same idea: `args.length` ≈ argc, `args` ≈ argv.)
+
+    The OS is the one that puts these words into the new process's memory — that's why they show up in step 2 below.
 
 ### How a program becomes a process
 
-1. Load code and static data from disk into memory (modern OSes do this **lazily**, page by page).
-2. Allocate the **stack** (with `argc`/`argv`) and a small **heap**.
-3. Set up file descriptors 0, 1, 2.
-4. Jump to `main()` — the OS hands the CPU to the process.
+1. **Load** the code and static data from the executable file on disk into memory. Modern OSes do this **lazily**: they load a piece (a page) only when the program first touches it, so programs start fast.
+2. **Create the stack** and place argc and argv on it, so `main` finds its arguments; **create a small heap** for later `malloc` calls.
+3. **Open the three standard files** (stdin, stdout, stderr — fds 0, 1, 2).
+4. **Jump to `main()`**: set the PC to the program's first instruction, switch to user mode, and let it run.
+
+```mermaid
+flowchart LR
+    D[("Disk:<br/>program file")] -- "1 · load code + data<br/>(lazily)" --> M
+    subgraph M["Memory: new address space"]
+        direction TB
+        C[code + static data]
+        H["heap (small, for malloc)"]
+        S["stack: argc, argv"]
+    end
+    M -- "3 · fds 0/1/2 opened<br/>4 · PC = main, run" --> CPU[(CPU)]
+```
 
 ### Process states
 
@@ -44,7 +85,12 @@ stateDiagram-v2
     Zombie --> [*]: parent calls wait()
 ```
 
-A **zombie** has exited but its parent hasn't collected its exit status yet.
+What the states mean:
+
+- **Running** — on the CPU right now.
+- **Ready** — could run, but waiting for its turn on the CPU.
+- **Blocked** — waiting for something slow (disk, keyboard, network); can't run even if the CPU is free.
+- **Zombie** — finished, but its parent hasn't yet asked "how did it go?" (collected its exit status with `wait()`).
 
 ### The process API
 
@@ -64,16 +110,32 @@ if (rc == 0) {                 // child
 }
 ```
 
+Reading it line by line:
+
+1. `fork()` splits the program in two. From here on, **two copies** run the same code.
+2. Each copy checks `rc`. The child sees `0`; the parent sees the child's process ID (a positive number).
+3. The child calls `execvp` to **turn itself into** the `wc` program (word count), with the argument `notes.txt`. Its old code is gone.
+4. The parent calls `wait` and sleeps until the child (now `wc`) finishes.
+
+This is exactly what your shell does every time you type a command.
+
 ### Why fork and exec are separate
 
 The gap between `fork()` and `exec()` lets the shell **change the child's environment** before the new program starts. That's how redirection works:
 
-`wc notes.txt > out.txt` → shell forks → child does `close(1); open("out.txt")` (the new file gets the lowest free fd, which is 1) → `exec("wc")`. `wc` writes to stdout as usual, but stdout is now the file. Pipes (`|`) use the same trick with `pipe()`.
+When you type `wc notes.txt > out.txt`:
+
+1. The shell **forks** a child.
+2. The child **closes** file descriptor 1 (stdout, normally the screen).
+3. The child **opens** `out.txt`. The OS always hands out the lowest free number, which is now 1, so `out.txt` *becomes* stdout.
+4. The child **execs** `wc`. `wc` writes to stdout as usual, without knowing it's now writing into a file.
+
+Pipes (`ls | wc`) use the same trick: the shell connects one child's stdout to the other's stdin before calling exec.
 
 ### Other bits
 
-- `kill()` sends **signals** (SIGINT on Ctrl-C, SIGTSTP on Ctrl-Z); a process can catch them with `signal()`.
-- **Users** limit who can signal whom; the **superuser (root)** can do anything.
+- `kill()` sends a **signal** — a short message to a process. Pressing Ctrl-C sends SIGINT ("please stop"); Ctrl-Z sends SIGTSTP ("pause"). A program can choose to catch a signal and react, using `signal()`.
+- You can only signal your own processes. The **superuser (root)**, the administrator account, can signal anyone.
 
 ## Worked example
 
@@ -83,9 +145,9 @@ int rc = fork();
 printf("rc=%d\n", rc);
 ```
 
-Output: `hello` once, then two `rc=` lines — one `rc=0` (child), one `rc=<pid>` (parent). The **order of the two lines is not fixed**: the scheduler decides who runs first. Add `wait()` in the parent and the child's line always comes first.
+Output: `hello` once (it was printed *before* the fork, when there was only one process), then two `rc=` lines — `rc=0` from the child and `rc=<some number>` from the parent (the child's process ID). The **order of the two lines is not fixed**: the scheduler decides who runs first. Add `wait()` in the parent and the child's line always comes first.
 
-## Traps
+## Common mistakes
 
 - After `fork()`, the child gets a **copy** of memory. Changing a variable in the child does not change the parent's.
 - `exec()` does **not** create a new process. The PID stays the same.
@@ -94,7 +156,7 @@ Output: `hello` once, then two `rc=` lines — one `rc=0` (child), one `rc=<pid>
 
 ## Recall
 
-**Blurt test:** draw the state diagram; write the fork–exec–wait snippet; explain `>` redirection in 3 steps.
+**Blurt test** — close this page, then on paper, from memory: draw the state diagram; write the fork–exec–wait snippet; explain `>` redirection in 3 steps.
 
 <details markdown="1"><summary>What does fork() return in the parent and in the child?</summary>
 
@@ -132,9 +194,9 @@ Saved registers (context), state, PID, parent, memory info, open files, and simi
 
 </details>
 
-**Explain it (60 s):** "Walk me through what the shell does when you type `ls -l > out.txt`."
+**Explain it out loud (60 seconds, as if to a friend):** "Walk me through what the shell does when you type `ls -l > out.txt`."
 
-**Simulator drill:** `python3 process-run.py -l 5:100,5:100 -c` then try `-l 4:0,1:100 -S SWITCH_ON_IO -I IO_RUN_IMMEDIATE` and predict CPU utilisation before running with `-c -p`.
+**Simulator drill** (book's free Python homework tools — see [the recall system](../start/recall-system.md#four-more-tricks-that-pay-off)): `python3 process-run.py -l 5:100,5:100 -c` then try `-l 4:0,1:100 -S SWITCH_ON_IO -I IO_RUN_IMMEDIATE` and predict CPU utilisation before running with `-c -p`.
 
 ## Connects to
 

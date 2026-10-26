@@ -260,3 +260,61 @@
 *[callback]: A server's promise to tell a client when a file it caches changes
 *[callbacks]: Server promises to tell clients when files they cache change
 *[FID]: AFS file identifier, used instead of a path name
+*[argc]: Argument count — how many words were typed to start the program (including the program name)
+*[argv]: Argument vector — array of the command-line words as strings; argv[0] is the program name
+*[command-line arguments]: The words typed after a program's name when starting it, e.g. the file names in 'cp a.txt b.txt'
+*[stack]: Memory for local variables, function arguments and return addresses; grows on each call, shrinks on return
+*[heap]: Memory a program requests while running (malloc in C, new in Java) and frees when done
+*[static data]: Global variables, set up when the program loads
+*[register]: A tiny, very fast storage slot inside the CPU (or a device) holding one value
+*[registers]: Tiny, very fast storage slots inside the CPU (or a device), each holding one value
+*[program counter]: Register holding the address of the next instruction to run (also called instruction pointer)
+*[PC]: Program counter — register holding the address of the next instruction to run
+*[stack pointer]: Register pointing at the current top of the stack
+*[frame pointer]: Register pointing at the start of the current function's area on the stack
+*[stdin]: Standard input, file descriptor 0 — usually the keyboard
+*[stdout]: Standard output, file descriptor 1 — usually the terminal screen
+*[stderr]: Standard error, file descriptor 2 — where error messages go
+*[fd]: File descriptor — a small integer a process uses to refer to an open file
+*[executable]: A program file on disk containing machine code, ready to be loaded and run
+*[lazily]: Done only when first needed, not up front
+*[malloc]: C library call that allocates heap memory; free() gives it back
+*[instruction]: One basic CPU operation, such as load, add or store
+*[instructions]: Basic CPU operations, such as load, add or store
+*[kernel]: The core of the OS that runs in privileged (kernel) mode
+*[kernel stack]: A per-process stack inside the kernel, used while the kernel runs on that process's behalf
+*[privileged instruction]: A CPU instruction allowed only in kernel mode
+*[privileged]: Allowed only in kernel mode
+*[interrupt handler]: OS code that runs when a particular interrupt arrives
+*[signal]: A notification sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kills it by default
+*[signals]: Notifications sent to a process (e.g. SIGINT on Ctrl-C) that it can catch or that kill it by default
+*[SIGINT]: Interrupt signal, sent by Ctrl-C; stops the program by default
+*[superuser]: The all-powerful administrator account (root) that can do anything
+*[shell]: The command-line program that reads your commands and runs them as processes
+*[redirection]: Sending a program's output to a file (>) or taking its input from one (<)
+*[pipe]: A one-way channel connecting one process's output to another's input (the | in a shell)
+*[cache]: Small, fast memory holding copies of recently used data so it needn't be fetched again from somewhere slower
+*[CPU cache]: Small, fast memory on the CPU holding recently used data from RAM
+*[pointer]: A variable that holds a memory address
+*[pointers]: Variables that hold memory addresses
+*[POSIX]: The standard UNIX-style API (fork, open, pthreads…) shared by Linux, macOS and others
+*[pthread]: POSIX threads — the standard C thread library
+*[x86]: The CPU family in most PCs and servers (Intel, AMD)
+*[MIPS]: A simple RISC CPU family often used in teaching
+*[RISC]: Reduced instruction set computer — CPUs with a small set of simple instructions (MIPS, ARM, RISC-V)
+*[CISC]: Complex instruction set computer — CPUs with many complex instructions (x86)
+*[XOR]: Exclusive OR — 1 if the two bits differ, 0 if they match
+*[hash table]: A structure that finds items by computing an index from their key
+*[red-black tree]: A self-balancing binary search tree; lookups, inserts and deletes take O(log n)
+*[linked list]: A chain of nodes, each pointing to the next
+*[B-tree]: A balanced, wide tree used for fast lookups on disk (databases, file systems)
+*[load]: CPU instruction that reads a value from memory into a register
+*[store]: CPU instruction that writes a register's value to memory
+*[RAM]: Main memory — fast, but lost when power goes off
+*[bus]: The shared wires that connect the CPU, memory and devices
+*[firmware]: Software built into a device (e.g. a disk's own controller program)
+*[block]: The file system's unit of storage, typically 4 KB
+*[blocks]: The file system's units of storage, typically 4 KB each
+*[metadata]: Data about data — file size, owner, timestamps, where its blocks are
+*[UDP]: A network protocol that sends messages with no delivery guarantee
+*[TCP]: A network protocol that delivers a reliable, ordered byte stream

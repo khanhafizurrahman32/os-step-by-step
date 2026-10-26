@@ -56,6 +56,7 @@ nav:
   - Home: index.md
   - Start here:
       - start/index.md
+      - Background you need: start/background.md
       - The 80/20 map: start/80-20-map.md
       - The recall system: start/recall-system.md
       - 3-week plan: start/study-plan.md

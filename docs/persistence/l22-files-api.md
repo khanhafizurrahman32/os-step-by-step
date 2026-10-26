@@ -1,24 +1,35 @@
 # L22 · Files & directories (the API)
 
-> **Book:** Ch 39 (pp. 457–476) · **Tier:** 🔴 Must · **Time:** 40 min
+> **Book:** Ch 39 (pp. 457–476) · **Priority:** 🔴 must-know · **Time:** 40 min
 
-## TL;DR
+!!! example "In plain words"
+    Under the hood, a **file** is a numbered box of bytes. The number is the **inode number**. A **directory** is a list matching friendly names to those numbers, like a phone's contacts mapping "Mum" to a number.
+
+    - `open` gives you a **file descriptor**, a ticket for "this open file". Keep it for reading and writing.
+    - `write` usually only reaches memory at first. `fsync` means "really put it on the disk now".
+    - A name is just a **link** to the box, and a box can have several names. Deleting a name (`unlink`) removes the box only when no names, and no open tickets, are left.
+
+## TL;DR (the 3 things to remember)
 
 - A **file** is a linear array of bytes with a low-level name, the **inode number**. A **directory** is a file that maps human names → inode numbers.
 - `open()` returns a **file descriptor** (a per-process handle); each open has its own **offset** in the system-wide **open file table**. `write()` usually goes to memory first — **`fsync()`** forces it to disk.
 - A name is just a **link** to an inode. `link()` adds a hard link (refcount++), `unlink()` removes one; the file is deleted when the count hits 0. **Symbolic links** are files holding a path — they can dangle.
 
-## The crux
+## The big question
 
 > How should the OS manage a persistent device? What should the API look like, and what are its important aspects?
 
 ## The story chain
+
+<small>Key: **bold** = the problem or the final design · *italics* = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small>
 
 **Need named, persistent data** → *files (bytes + inode number) and directories (name → inode)* → *open → fd → read/write with a current offset* → *`lseek` to move the offset* → ❌ `write` returns before the data is on disk → *`fsync()`* (and fsync the directory for a new file) → ❌ how to update a file atomically? → *write a temp file, fsync, `rename()` over the old one* (rename is atomic) → *names are links; deleting = `unlink`* → ❌ hard links can't cross file systems or point to directories → *symbolic links*.
 
 ## Core ideas
 
 ### File descriptors and offsets
+
+When a program opens a file, three layers are involved. The program gets a small number (the **file descriptor**, e.g. 3). That number points to an entry in the OS's **open file table**, which remembers *how far through the file you are* (the **offset**). That entry points to the file's **inode**, which holds its size and where its data is on disk.
 
 ```mermaid
 flowchart LR
@@ -36,37 +47,39 @@ flowchart LR
     e1 --> I["inode 1234"]
 ```
 
-- Each `open()` creates a **new** open-file-table entry with its own offset, even for the same file.
-- `fork()` and `dup()` make two fds **share** one entry → they share the offset (refcount on the entry).
-- Offset changes by reads/writes or explicitly with `lseek()` (which does **not** move the disk head).
+- Each `open()` creates a **new** entry with its own offset, even for the same file. Open a file twice and you can read the start and the end independently.
+- After `fork()` (or `dup()`), the parent's and child's descriptors point to the **same** entry, so they **share one offset**. If the child reads 10 bytes, the parent's next read starts 10 bytes further on. (The entry keeps a count of how many descriptors use it, so it's freed only when the last one closes.)
+- The offset moves forward as you read or write, or you can set it directly with `lseek()`. Despite the name, `lseek` only changes a number in memory; the disk arm doesn't move.
 
 ### Key calls
 
 | Call | Does |
 |---|---|
-| `open(path, flags, mode)` | Returns fd (`O_CREAT`, `O_WRONLY`, `O_TRUNC`…) |
-| `read / write(fd, buf, n)` | Move bytes; advance offset |
-| `lseek(fd, off, whence)` | Set offset |
-| `fsync(fd)` | Force dirty data to disk |
-| `rename(old, new)` | **Atomic** replace |
-| `stat / fstat` | Metadata from the inode (size, owner, perms, times, link count) |
-| `mkdir / opendir / readdir / rmdir` | Directories (`rmdir` only if empty) |
-| `link(old, new)` / `unlink(path)` | Add / remove a name for an inode |
-| `symlink` (`ln -s`) | Create a soft link |
-| `mount` | Graft a file system onto the directory tree |
+| `open(path, flags, mode)` | Opens (or creates) a file and returns a file descriptor. Flags say how: `O_CREAT` = create if missing, `O_WRONLY` = write only, `O_TRUNC` = empty it first |
+| `read(fd, buf, n)` / `write(fd, buf, n)` | Read or write up to n bytes at the current offset, then move the offset forward |
+| `lseek(fd, off, whence)` | Jump to a position in the file |
+| `fsync(fd)` | "Put everything I've written on the disk **now**, and only return when it's there" |
+| `rename(old, new)` | Rename a file. It happens all at once (**atomically**), even across a crash: you see either the old name or the new one, never a broken half |
+| `stat(path)` / `fstat(fd)` | Get a file's details: size, owner, permissions, times, number of links |
+| `mkdir`, `opendir`, `readdir`, `rmdir` | Make, list and remove directories (`rmdir` only works on an empty one) |
+| `link(old, new)` / `unlink(path)` | Add or remove a **name** for a file |
+| `symlink` (shell: `ln -s`) | Create a symbolic link (shortcut) |
+| `mount` | Attach another file system (e.g. a USB stick) at a folder in the tree |
 
 ### Hard vs symbolic links
 
 | | Hard link | Symbolic link |
 |---|---|---|
-| What it is | Another directory entry → **same inode** | A small file whose content is a **path** |
-| Delete original | Data survives (refcount > 0) | Link **dangles** |
-| Across file systems | ✘ | ✔ |
-| To directories | ✘ (cycles) | ✔ |
+| What it is | A second name for the **very same file** (same inode) | A small separate file that just contains a **path**, like a Windows shortcut |
+| Delete the original name | The file survives, since it still has another name | The link now points at nothing (**dangling** link) |
+| Can point to another disk/partition | ✘ | ✔ |
+| Can point to a directory | ✘ (could create loops in the tree) | ✔ |
 
 ### Permissions
 
-`-rwxr-x---` = owner / group / others. Directories: `x` lets you `cd` into it. Advanced: **ACLs**. **TOCTTOU** bug: check-then-use race between `stat()` and `open()`.
+In `ls -l`, you see strings like `-rwxr-x---`. After the first character (the file type), it's three groups of three: what the **owner**, the **group** and **everyone else** may do. `r` = read, `w` = write, `x` = execute (run it, or, for a directory, enter it). So `rwxr-x---` means: owner can do everything, group can read and run, others can do nothing. More detailed per-user rules are called **ACLs** (access control lists).
+
+**A classic security bug (TOCTTOU, "time of check to time of use"):** a program checks a file is safe (`stat`) and then opens it. In the gap between the two, an attacker swaps the file for something else.
 
 ### Atomic file update recipe
 
@@ -78,7 +91,9 @@ close(fd);
 rename("foo.txt.tmp", "foo.txt");    // atomic swap
 ```
 
-## Traps
+Why this works: you never touch the real `foo.txt` until the very end. You write the new version to a temporary file, make sure it's really on disk (`fsync`), then `rename` swaps it into place in one step. If the power fails at any point, `foo.txt` is either the complete old version or the complete new one, never half-written. Text editors save files this way.
+
+## Common mistakes
 
 - `write()` returning doesn't mean the data is on disk.
 - `lseek()` doesn't cause disk I/O.
@@ -87,7 +102,7 @@ rename("foo.txt.tmp", "foo.txt");    // atomic swap
 
 ## Recall
 
-**Blurt test:** the fd → open file table → inode picture; hard vs soft link table; the atomic-update recipe.
+**Blurt test** — close this page, then on paper, from memory: the fd → open file table → inode picture; hard vs soft link table; the atomic-update recipe.
 
 <details markdown="1"><summary>What is an inode number?</summary>
 
@@ -131,7 +146,7 @@ It removes one name (link) to the inode; the file is freed only when the link co
 
 </details>
 
-**Explain it (60 s):** "What happens, step by step, when you run `rm file` while another process still has the file open?"
+**Explain it out loud (60 seconds, as if to a friend):** "What happens, step by step, when you run `rm file` while another process still has the file open?"
 
 **Hands-on:** `strace cat foo.txt` and `ln foo bar; ls -i foo bar; stat foo` — see the calls and the shared inode.
 

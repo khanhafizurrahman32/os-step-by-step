@@ -1,14 +1,21 @@
 # L03 · Limited direct execution
 
-> **Book:** Ch 6 (pp. 49–62) · **Tier:** 🔴 Must · **Time:** 40 min
+> **Book:** Ch 6 (pp. 49–62) · **Priority:** 🔴 must-know · **Time:** 40 min
 
-## TL;DR
+!!! example "In plain words"
+    Think of a driving instructor with a learner. For speed, the learner drives the real car directly (programs run on the real CPU). But the instructor keeps **dual controls**:
+
+    - Some actions need permission. The learner can't take the motorway alone, so they *ask* (a system call).
+    - An alarm rings every few minutes (the **timer interrupt**), and the instructor can take over the wheel. That stops a learner from driving off forever.
+    - Swapping learners means writing down exactly where the first one was (seat, mirrors, route) so they can carry on later. That's a **context switch**.
+
+## TL;DR (the 3 things to remember)
 
 - For speed, the OS lets programs **run directly on the CPU**. For control, it **limits** them: user programs run in **user mode** and must **trap** into the kernel for privileged work.
 - The kernel regains the CPU through a **timer interrupt**, even if a program never gives it up.
 - Switching processes = **context switch**: save the old process's registers into its kernel structure, restore the next one's, return from trap.
 
-## The crux
+## The big question
 
 > How can the OS run programs efficiently while keeping control of the CPU?
 
@@ -16,22 +23,28 @@ Two sub-problems: (1) **restricted operations** — how does a process do I/O wi
 
 ## The story chain
 
+<small>Key: **bold** = the problem or the final design · *italics* = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small>
+
 **Run the program directly** → ❌ it could do anything (wipe disk) → *user mode vs kernel mode; privileged work via system calls that trap* → ❌ how does the OS ever run again if a program loops forever? → *cooperative: wait for the program to make a syscall or yield* → ❌ an infinite loop never yields; only fix is reboot → *non-cooperative: a hardware timer interrupt every few ms hands control to the OS* → **limited direct execution + context switch**.
 
 ## Core ideas
 
 ### Problem 1 — restricted operations
 
-- The CPU has (at least) two modes. **User mode**: no I/O, no changing page tables. **Kernel mode**: everything allowed.
-- A **system call** runs a special **trap** instruction: it saves registers to the **kernel stack**, switches to kernel mode, and jumps into the OS.
-- Where does it jump? At boot, the kernel sets up a **trap table** that tells the hardware the address of each handler. Setting the trap table is itself privileged. Programs pass a **system-call number**, never an address — so they can't jump to arbitrary kernel code.
-- The OS finishes with **return-from-trap**: restore registers, drop to user mode, continue the program.
+The problem: if a program runs directly on the CPU, what stops it from doing anything it likes, such as erasing the disk or reading another program's memory?
+
+- **The hardware has two modes.** In **user mode** (where programs run), dangerous instructions like talking to the disk are simply refused. In **kernel mode** (where the OS runs), everything is allowed.
+- **So how does a program read a file?** It makes a **system call**. That executes a special **trap** instruction, which does three things at once: saves the program's registers, switches the CPU to kernel mode, and jumps into the OS.
+- **Jumps where?** Not anywhere the program chooses. That would let it skip the OS's safety checks. At boot, the OS gives the hardware a **trap table**: a list of "for event X, run OS code at address Y". A program only says *which* service it wants by number (e.g. "system call #2 = open a file").
+- **Going back:** when the OS is done, it runs **return-from-trap**. This restores the registers, switches back to user mode and resumes the program right after its system call.
 
 ### Problem 2 — switching between processes
 
-- **Cooperative** approach (old Mac OS): the OS runs only when a process makes a system call, yields, or does something illegal. One infinite loop → reboot.
-- **Non-cooperative** approach: a **timer interrupt** fires every few milliseconds. The hardware saves the running program's registers and jumps to the OS's interrupt handler. Now the OS can decide: keep running this process, or switch.
-- The decision is made by the **scheduler** ([L04](l04-scheduling.md)). Switching is the **context switch**.
+The problem: while a program runs, the OS **isn't running at all**. The CPU only does one thing at a time. So how does the OS ever get the CPU back to let another program have a turn?
+
+- **Cooperative approach** (old Mac OS): wait politely. The OS only runs when the program makes a system call, voluntarily gives up the CPU (*yields*), or crashes. But a program stuck in an infinite loop never does any of those, and the only fix is rebooting the machine.
+- **Non-cooperative approach** (every modern OS): a hardware **timer** interrupts the CPU every few milliseconds, whatever the program is doing. The interrupt forces a jump into the OS. Now the OS can decide: let this program continue, or switch to another one.
+- Deciding *who* runs next is the **scheduler's** job ([L04](l04-scheduling.md)). The act of switching is a **context switch**: save the current program's registers, load the next program's registers.
 
 ### The timeline of a context switch (A → B)
 
@@ -51,13 +64,20 @@ sequenceDiagram
     B->>B: running...
 ```
 
-Two saves happen: **hardware** saves the user registers (on the interrupt), and the **OS** saves the kernel registers (in `switch()`).
+How to read this: time flows downward. A is running; the timer fires; the OS decides to run B instead; it swaps the saved registers; B continues exactly where it last stopped.
+
+Two saves happen:
+
+1. The **hardware** saves A's user registers automatically when the interrupt hits.
+2. The **OS** saves the registers it was using in its own code, in a routine usually called `switch()`, into A's process control block.
+
+Restoring B is the same two steps in reverse.
 
 ### Costs to remember
 
-A system call or context switch takes on the order of **microseconds** (the book quotes sub-microsecond on modern machines for a null syscall). The hidden cost is cache and TLB pollution after the switch.
+A system call or context switch takes about a **microsecond** or less on modern machines, which is cheap. The bigger hidden cost: after a switch, the CPU's caches and TLB are full of the *old* program's data, so the new program runs slowly for a while until they warm up.
 
-## Traps
+## Common mistakes
 
 - The trap table is set up **at boot**, in kernel mode — not by each program.
 - User programs pass a **syscall number**, not a handler address.
@@ -66,7 +86,7 @@ A system call or context switch takes on the order of **microseconds** (the book
 
 ## Recall
 
-**Blurt test:** write the two problems and their solutions; draw the context-switch timeline with who-saves-what.
+**Blurt test** — close this page, then on paper, from memory: write the two problems and their solutions; draw the context-switch timeline with who-saves-what.
 
 <details markdown="1"><summary>What does "limited direct execution" mean?</summary>
 
@@ -104,7 +124,7 @@ So user code can only reach approved kernel entry points; it can't jump into the
 
 </details>
 
-**Explain it (60 s):** "Your program runs `while(1);`. Explain step by step how the OS still gets to run another program."
+**Explain it out loud (60 seconds, as if to a friend):** "Your program runs `while(1);`. Explain step by step how the OS still gets to run another program."
 
 ## Connects to
 

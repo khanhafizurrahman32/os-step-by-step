@@ -24,22 +24,27 @@ flowchart LR
     P --> D[Distributed FS: NFS · AFS]
 ```
 
+!!! tip "Stuck on a word?"
+    Words with a dotted underline have built-in definitions: hover over them (or tap on a phone). All of them are listed in the [Glossary](review/glossary.md).
+
 ## How every lesson is built
 
 | Section | What it gives you | Time |
 |---|---|---|
-| **TL;DR** | The 3 lines you must not forget | 1 min |
-| **The crux** | The one question the chapter answers | 30 s |
-| **The story chain** | Problem → naive fix → what breaks → better fix. OSTEP teaches this way; it's also the best memory hook | 3 min |
-| **Core ideas + diagram** | The mechanism, in plain words | 10 min |
-| **Worked example / numbers** | The calculation an exam will ask | 5 min |
-| **Traps** | Where people lose marks | 2 min |
-| **Recall** | Blurt test, flashcards, explain-it prompt | 10 min |
+| **In plain words** | An everyday analogy — read this first if the topic is new | 1 min |
+| **TL;DR** | The 3 things to remember | 1 min |
+| **The big question** | The one question the chapter answers (the book calls it "the crux") | 30 s |
+| **The story chain** | Problem → first attempt → what goes wrong → better fix. OSTEP teaches this way, and it's the best memory hook | 3 min |
+| **Core ideas + diagram** | How it works, explained step by step | 10 min |
+| **Worked example / numbers** | A calculation done slowly, like an exam would ask | 5 min |
+| **Common mistakes** | Where people lose marks | 2 min |
+| **Recall** | Self-tests: write from memory, flashcards, explain out loud | 10 min |
 | **Read in the book** | Exactly which sections to read, skim or skip | — |
 
 ## Where to start
 
-1. Read **[The 80/20 map](start/80-20-map.md)** — what to study deeply and what to skip.
-2. Read **[The recall system](start/recall-system.md)** once. It's 5 minutes and doubles what you keep.
-3. Follow the **[3-week plan](start/study-plan.md)**, one lesson a day.
-4. Before an exam or interview, use the **[cheat sheet](review/cheat-sheet.md)** and **[mixed drills](review/drills.md)**.
+1. New to how computers run programs? Read **[Background you need](start/background.md)** first (10 minutes).
+2. Read **[The 80/20 map](start/80-20-map.md)** — what to study deeply and what to skip.
+3. Read **[The recall system](start/recall-system.md)** once. It's 5 minutes and doubles what you keep.
+4. Follow the **[3-week plan](start/study-plan.md)**, one lesson a day.
+5. Before an exam or interview, use the **[cheat sheet](review/cheat-sheet.md)** and **[mixed drills](review/drills.md)**.

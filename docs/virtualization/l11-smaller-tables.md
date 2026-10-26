@@ -1,24 +1,35 @@
 # L11 · Smaller page tables: multi-level & friends
 
-> **Book:** Ch 20 (pp. 211–226) · **Tier:** 🔴 Must · **Time:** 45 min · **Simulator:** `vm-smalltables/paging-multilevel-translate.py`
+> **Book:** Ch 20 (pp. 211–226) · **Priority:** 🔴 must-know · **Time:** 45 min · **Simulator:** `vm-smalltables/paging-multilevel-translate.py`
 
-## TL;DR
+!!! example "In plain words"
+    A simple page table has one entry for **every** possible page, even though most of a program's address range is empty. It's like a 1,000-page phone book where 990 pages are blank.
+
+    A **multi-level page table** is a phone book with a **table of contents** (the page directory). The contents page says which sections exist, and empty sections are simply not printed. You save a lot of paper. The cost is one extra lookup (contents, then section), and the TLB hides that most of the time.
+
+## TL;DR (the 3 things to remember)
 
 - Linear page tables waste memory on **invalid** entries for the huge unused middle of the address space.
 - **Multi-level page table:** chop the page table into page-sized pieces; a **page directory** points only to the pieces that have valid entries. Unused regions cost nothing.
 - Cost: a TLB miss now needs **one memory access per level** (time–space trade-off). Alternatives: bigger pages, paging+segments hybrid, inverted page tables.
 
-## The crux
+## The big question
 
 > How can we make page tables smaller, without making translation too slow?
 
 ## The story chain
+
+<small>Key: **bold** = the problem or the final design · *italics* = an attempted fix · ❌ = what goes wrong with it · → = "which leads to"</small>
 
 **4 MB of page table per process, mostly invalid entries** → *bigger pages (16 KB → 1 MB table)* → ❌ internal fragmentation, waste inside pages → *hybrid: a page table per segment, with bounds* → ❌ still needs segmentation, tables are variable-sized again (external fragmentation) → *multi-level: page the page table itself* → ❌ more memory accesses on a TLB miss, more complex → *accept it, because the TLB hits most of the time* → **x86-64 uses 4 levels**.
 
 ## Core ideas
 
 ### Two-level page table
+
+Take the big page table and cut it into page-sized pieces. Then add a small top-level index, the **page directory**, with one entry per piece. Each entry says either "this piece exists, and it's at frame X" or "this piece is all empty, so it isn't stored at all".
+
+The VPN is now read in two parts: the first part picks the entry in the page directory, the second part picks the entry inside that piece.
 
 ```mermaid
 flowchart TB
@@ -30,10 +41,12 @@ flowchart TB
     PTE --> PA["PFN | offset"]
 ```
 
-- The page directory has one **PDE** per page of the page table. If a PDE is invalid, that page of PTEs simply isn't allocated.
-- Every piece is exactly one page → easy to allocate, no fragmentation, and pieces can even be swapped.
+- Each page-directory entry (**PDE**) covers one page-sized piece of the page table. If the PDE is marked invalid, that piece isn't allocated at all. This is where the savings come from.
+- Every piece is exactly one page in size, so the OS can store it in any free frame: no fragmentation, and pieces can even be moved out to disk.
 
 ### Translation on a TLB miss (two levels)
+
+In words: use the top part of the VPN to read the page-directory entry (memory read 1) → if valid, it tells you which frame holds the right piece → use the next part of the VPN to read the PTE inside that piece (memory read 2) → put the result in the TLB and retry.
 
 ```
 PDIndex = (VPN & PD_MASK) >> PD_SHIFT
@@ -46,28 +59,32 @@ if PDE.Valid:
 
 ### How many levels?
 
-Each piece must fit in a page. With 4 KB pages and 4-byte PTEs, one page holds **1024 PTEs** → 10 bits of index per level.
+Rule: every piece (including the top directory) must fit in one page.
 
-- 32-bit address: 12 offset + 20 VPN = 10 (directory) + 10 (table) → **2 levels** (classic x86).
-- With 8-byte PTEs (512 per page = 9 bits) and a 48-bit address: 48 − 12 = 36 bits = 4 × 9 → **4 levels** (x86-64).
+- A 4 KB page holds 4096 ÷ 4 = **1024 entries** of 4 bytes. Choosing one of 1024 entries takes 10 bits, so **each level uses 10 bits** of the VPN.
+- **32-bit machine:** 32 bits − 12 offset bits = 20 VPN bits = 10 + 10 → **2 levels** (classic 32-bit x86).
+- **64-bit machine** (uses 48-bit addresses, 8-byte entries): 4096 ÷ 8 = 512 entries per page → 9 bits per level. 48 − 12 = 36 VPN bits = 4 × 9 → **4 levels** (today's x86-64).
 
 ### The other options (one line each)
 
 | Option | Idea | Downside |
 |---|---|---|
-| Bigger pages | Fewer PTEs | Internal fragmentation |
-| Hybrid (paging + segments) | Page table per segment, bounded | Rigid; tables vary in size |
-| **Inverted page table** | One table for the whole machine: entry per **physical** frame, which process/VPN owns it; use a hash table to search | Lookups need hashing; sharing is awkward |
-| Swap page tables to disk | Page tables in kernel virtual memory | Complex (VAX/VMS does this) |
+| Bigger pages | Fewer pages means fewer entries | Small programs waste most of each big page (internal fragmentation) |
+| Hybrid (paging + segments) | A separate page table for code, heap and stack, each only as long as needed | Inflexible; tables of different sizes bring fragmentation back |
+| **Inverted page table** | One table for the whole machine, with one entry per **real frame** saying which process and page is in it; found quickly with a hash table | Every lookup needs a search; sharing pages is awkward |
+| Swap page tables to disk | Page tables can themselves be paged out | Complex (VAX/VMS did this) |
 
 ## Worked example
 
-16 KB address space, 64-byte pages, 14-bit address → 8-bit VPN, 6-bit offset. 256 PTEs × 4 bytes = 1 KB table = **16 pages** of PTEs (16 PTEs per page).
+A small machine: 16 KB address space, tiny 64-byte pages.
 
-- Index into the directory: top **4** bits of VPN. Index into a page of PTEs: next **4** bits.
-- If only code (pages 0–1), heap (4–5) and stack (254–255) are used, only **2** of the 16 PTE pages are needed: one for VPNs 0–15 and one for 240–255. Directory (1 page) + 2 = **3 pages instead of 16**.
+1. **Count the pages:** 16 KB ÷ 64 B = 256 pages, so the VPN is 8 bits (2<sup>8</sup> = 256) and the offset is 6 bits (2<sup>6</sup> = 64).
+2. **Size of a simple linear table:** 256 entries × 4 bytes = 1 KB. That's 1 KB ÷ 64 B = **16 pages** of page table, each holding 16 entries.
+3. **Make it two-level:** the directory needs one entry per piece, so 16 entries, chosen by the **top 4 bits** of the VPN. The **next 4 bits** choose the entry inside a piece.
+4. **What's actually used?** Say the program only uses code (pages 0–1), heap (pages 4–5) and stack (pages 254–255). Pages 0–15 fall in piece #0, and pages 240–255 fall in piece #15. The other 14 pieces are completely empty and are never allocated.
+5. **Result:** 1 directory page + 2 pieces = **3 pages instead of 16**.
 
-## Traps
+## Common mistakes
 
 - The page directory itself must fit in one page — otherwise add a level.
 - More levels = smaller tables but **more accesses per TLB miss**; no extra cost on a TLB hit.
@@ -75,7 +92,7 @@ Each piece must fit in a page. With 4 KB pages and 4-byte PTEs, one page holds *
 
 ## Recall
 
-**Blurt test:** the story chain; the two-level diagram; compute levels needed for 32-bit and 48-bit addresses.
+**Blurt test** — close this page, then on paper, from memory: the story chain; the two-level diagram; compute levels needed for 32-bit and 48-bit addresses.
 
 <details markdown="1"><summary>Why are linear page tables wasteful?</summary>
 
@@ -113,9 +130,9 @@ Internal fragmentation: most of each big page goes unused for small allocations.
 
 </details>
 
-**Explain it (60 s):** "Why is a multi-level page table a time–space trade-off, and why is it usually a good one?"
+**Explain it out loud (60 seconds, as if to a friend):** "Why is a multi-level page table a time–space trade-off, and why is it usually a good one?"
 
-**Simulator drill:** `python3 paging-multilevel-translate.py -s 0` — walk each address through PDE → PTE → physical, check with `-c`.
+**Simulator drill** (book's free Python homework tools — see [the recall system](../start/recall-system.md#four-more-tricks-that-pay-off)): `python3 paging-multilevel-translate.py -s 0` — walk each address through PDE → PTE → physical, check with `-c`.
 
 ## Connects to
 

@@ -2,13 +2,18 @@
 
 > **Book:** Ch 43 (pp. 527–542) 🟡 · Ch 44 (pp. 543–554) 🟡 · **Time:** 40 min · **Simulators:** `file-lfs/lfs.py`, `file-integrity/checksum.py`
 
-## TL;DR
+!!! example "In plain words"
+    **LFS** treats the disk like a diary. You never go back and edit old pages; every change is written on the **next blank pages**, in one sweep. Writing is very fast because it's all sequential. The cost: you need an index of where the latest version of each thing is (the **inode map**), and someone must occasionally clear out pages full of outdated entries (the **cleaner**).
+
+    **Data integrity:** disks sometimes fail quietly, returning wrong data with no error. A **checksum** is a fingerprint stored with the data. Recompute it when you read, and if the fingerprints don't match, the data is corrupt and you use a backup copy.
+
+## TL;DR (the 3 things to remember)
 
 - **LFS:** memory is big, so reads hit the cache — **optimise for writes**. Buffer all updates (data *and* inodes) into a big **segment** and write it **sequentially** to free space. **Never overwrite in place.**
 - Inodes now move, so an **inode map (imap)** finds them; pieces of the imap are written with each segment and located through the fixed **checkpoint region**. Old versions become garbage → a **cleaner** compacts segments.
 - **Data integrity:** disks also fail partially — **latent sector errors** (detectable) and **silent corruption** (not). Use **checksums** stored separately, plus block **address** and **write verification** to catch misdirected and lost writes; **scrub** periodically.
 
-## The crux
+## The big question
 
 > LFS: how can a file system turn all writes into sequential writes? · Integrity: how do we make sure the data we read back is the data we wrote?
 
@@ -17,6 +22,12 @@
 **Memory grows → most reads hit cache; disk transfer improves faster than seek** → *write everything sequentially* → ❌ one small write at a time still pays rotation → *buffer into large segments (MBs)* → ❌ inodes are no longer at fixed places → *imap: inum → inode address* → ❌ where is the imap? → *write imap chunks in the log too; fixed checkpoint region points to the latest chunks* → ❌ old copies pile up → *cleaner: read M segments, write live blocks into N < M new ones* → ❌ which blocks are live? → *segment summary block: (inum, offset) per block; check if the inode still points here* → ❌ crash while writing the CR → *two CRs, alternate, with timestamps*.
 
 ## Core ideas — LFS
+
+### Writing in LFS
+
+The LFS rule: **never overwrite anything.** Every change — new data, the updated inode, everything — is collected in memory and then written together as one big sequential chunk, a **segment** (several MB), onto free space. Large sequential writes are what disks do fastest ([L20](l20-disks.md)).
+
+That creates a puzzle. A normal file system keeps inode 7 in a fixed spot, but in LFS a new copy of inode 7 is written somewhere new every time the file changes. So how do you find the *latest* inode 7? With an **inode map (imap)**: a table "inode 7 is currently at disk address X". Pieces of the imap are written into the log too, and one **fixed** place on the disk, the **checkpoint region**, says where the latest imap pieces are.
 
 ### Reading a file in LFS
 
@@ -27,21 +38,25 @@ flowchart LR
     IN --> DB["data blocks<br/>(in the log)"]
 ```
 
-Once the imap is cached in memory, a read is the same cost as a normal FS: imap lookup → inode → block.
+Follow the arrows: fixed checkpoint region → latest imap → the file's latest inode → its data. In practice the imap is kept in memory, so reading costs about the same as in a normal file system.
 
 ### Write cost amortisation
 
-To reach fraction F of peak bandwidth R<sub>peak</sub> with positioning time T<sub>position</sub>, buffer **D = F/(1−F) × R<sub>peak</sub> × T<sub>position</sub>**. Example: 10 ms positioning, 100 MB/s, F = 90% → D = 9 × 100 MB/s × 0.01 s = **9 MB**.
+How big should a segment be? Each segment write pays one seek + rotation first, so the segment must be big enough to make that cost small. To get a fraction F of the disk's top speed: **D = F/(1−F) × R<sub>peak</sub> × T<sub>position</sub>**.
+
+*Example:* 10 ms positioning, 100 MB/s top speed, and we want 90%. F/(1−F) = 0.9/0.1 = 9, so D = 9 × 100 MB/s × 0.01 s = **9 MB** per segment.
 
 ### Garbage collection
 
-- Works **segment by segment**. A **segment summary block** records each block's inode number and offset → liveness check: look up the inode via the imap; if it still points to this address, the block is live. (A version number can shortcut this.)
-- **Which segments to clean?** Hot (often overwritten) segments: wait — more blocks will die. **Cold** segments: clean sooner.
-- Directories: LFS avoids the **recursive update problem** — the directory stores (name, inum), not the inode's address, so moving an inode only changes the imap.
+Because nothing is overwritten, old versions pile up and the disk fills with outdated blocks (*garbage*). A background **cleaner** reads a few old segments, copies out only the blocks that are still current (**live**), packs them into a fresh segment, and frees the old ones.
+
+- **How does it know a block is live?** Each segment starts with a **summary block** noting, for every block, "this was block #3 of inode 7". The cleaner looks up inode 7's current version: if it still points at this exact address, the block is live; otherwise it's an outdated copy.
+- **Which segments to clean first?** Segments full of frequently changing (*hot*) data: wait, because more of their blocks will become garbage soon anyway. Segments of rarely changing (*cold*) data: clean sooner.
+- **Why moving inodes doesn't ripple upward:** directories store a file's inode *number*, not its disk address. When an inode moves, only the imap changes; the directory doesn't need rewriting.
 
 ### Crash recovery
 
-Alternate between **two checkpoint regions** with timestamps at both ends (detect torn CR writes). Then **roll forward** through segments written after the last checkpoint.
+The checkpoint region is updated every ~30 seconds. LFS keeps **two** of them and alternates between them, with a timestamp at both the start and the end of each. If the power fails while one is being written, its two timestamps won't match, so LFS uses the other, older one. Then it reads forward through any segments written after that checkpoint (**roll forward**) to recover recent work.
 
 LFS ideas live on in **copy-on-write** file systems (WAFL/NetApp, ZFS, btrfs) and in SSD FTLs.
 
@@ -51,23 +66,25 @@ LFS ideas live on in **copy-on-write** file systems (WAFL/NetApp, ZFS, btrfs) an
 
 | Failure | Detected? | Example cause |
 |---|---|---|
-| **Latent sector error (LSE)** | Yes — disk ECC fails, read returns error | Head crash, cosmic rays |
-| **Block corruption** | **No** — returns wrong data silently | Firmware bugs, bad bus |
-| **Misdirected write** | No | Data written to the wrong address |
-| **Lost write** | No | Disk says "done" but never wrote |
+Disks don't only fail completely. They also fail **partially**: the disk mostly works, but some blocks go bad.
 
-**Fail-partial** model: the disk mostly works but some blocks fail.
+| Failure | Does the disk notice? | Example cause |
+|---|---|---|
+| **Latent sector error (LSE)** — a block can't be read | **Yes**: the disk's internal error-correcting code (ECC) fails, and the read returns an error | Scratched surface, cosmic rays |
+| **Silent corruption** — a block reads back wrong | **No**: you get wrong data with no error | Buggy disk firmware, faulty cable |
+| **Misdirected write** | No | The right data was written to the **wrong** block |
+| **Lost write** | No | The disk said "done" but never actually wrote |
 
 ### Handling them
 
-- **LSEs:** use redundancy (RAID mirror/parity) to rebuild. Watch out: an LSE *during* RAID reconstruction → RAID-DP / extra parity.
-- **Corruption → checksums:** XOR, Fletcher, CRC. Store the checksum **apart** from the data (or per-sector extra bytes, e.g. 520-byte sectors). On read, recompute and compare; on mismatch, use a redundant copy.
-- **Misdirected writes:** include the **disk and block number** in the checksum record.
-- **Lost writes:** **write verify** (read after write — slow) or keep a checksum in the inode/indirect block too (ZFS).
-- **Scrubbing:** periodically read every block and check checksums, so bit rot is found before you need the data.
-- **Overheads:** space (~0.2% for 8 B per 4 KB block) and time (CPU to compute; mitigate by combining with the copy).
+- **Unreadable blocks (LSEs):** the disk reports them, so just rebuild the block from a mirror or parity ([RAID](l21-raid.md)). The danger is a second bad block turning up *while* rebuilding a failed disk, which is why some systems keep extra parity (e.g. NetApp's RAID-DP).
+- **Silent corruption → checksums.** A checksum is a small "fingerprint" computed from a block's contents (simple ones: XOR, Fletcher; stronger: CRC). Store it **separately** from the block. On every read, recompute the fingerprint; if it doesn't match the stored one, the block is corrupt, so use a redundant copy instead.
+- **Misdirected writes:** store the block's **own address** next to its checksum. If you read block 50 and the record says "I am block 70", something was written to the wrong place.
+- **Lost writes:** either read every block back right after writing it (**write verify** — reliable but slow), or keep a second copy of the checksum elsewhere, e.g. in the inode (ZFS does this). A lost write then leaves a mismatch.
+- **Scrubbing:** checksums only help when you read the data. So the system periodically reads **every** block in the background to catch damage before you need the data.
+- **Costs:** a little space (8 bytes per 4 KB block ≈ 0.2%) and a little CPU time to compute fingerprints.
 
-## Traps
+## Common mistakes
 
 - LFS writes **inodes** into the log too — not only data.
 - The checkpoint region is the **only** fixed structure, and it's updated rarely (every ~30 s).
@@ -76,7 +93,7 @@ LFS ideas live on in **copy-on-write** file systems (WAFL/NetApp, ZFS, btrfs) an
 
 ## Recall
 
-**Blurt test:** the LFS chain; CR → imap → inode → data; the cleaner's liveness test; the four failure types with their fix.
+**Blurt test** — close this page, then on paper, from memory: the LFS chain; CR → imap → inode → data; the cleaner's liveness test; the four failure types with their fix.
 
 <details markdown="1"><summary>What's the core idea of LFS?</summary>
 
@@ -120,9 +137,9 @@ Periodically reading all blocks and verifying checksums to find corruption early
 
 </details>
 
-**Explain it (60 s):** "Why does LFS give great write performance, and what price does it pay?"
+**Explain it out loud (60 seconds, as if to a friend):** "Why does LFS give great write performance, and what price does it pay?"
 
-**Simulator drill:** `python3 lfs.py -n 3 -c` and `python3 checksum.py -D 1,2,3,4 -c` (compute the additive, XOR and Fletcher checksums by hand first).
+**Simulator drill** (book's free Python homework tools — see [the recall system](../start/recall-system.md#four-more-tricks-that-pay-off)): `python3 lfs.py -n 3 -c` and `python3 checksum.py -D 1,2,3,4 -c` (compute the additive, XOR and Fletcher checksums by hand first).
 
 ## Connects to
 

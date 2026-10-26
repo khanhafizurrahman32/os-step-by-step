@@ -1,7 +1,8 @@
 # Start here
 
-Three short pages before the first lesson:
+Short pages to read before the first lesson:
 
+- **[Background you need](background.md)** — 10 minutes on CPU, memory, stack, heap, registers, argc/argv and system calls. Skip it if those are already familiar.
 - **[The 80/20 map](80-20-map.md)** — all 50 chapters sorted into *Must*, *Skim* and *Skip*.
 - **[The recall system](recall-system.md)** — the 5-step loop, story chains, and the spaced review schedule.
 - **[3-week plan](study-plan.md)** — one lesson a day, with reviews already scheduled.

@@ -6,7 +6,7 @@ Reading feels like learning, but most of it is gone within a week. What makes th
 
 ```mermaid
 flowchart TB
-    A["1 · Preview<br/>TL;DR + crux<br/>2 min"] --> B["2 · Read<br/>lesson + 🔴 book sections<br/>30–40 min"]
+    A["1 · Preview<br/>TL;DR + big question<br/>2 min"] --> B["2 · Read<br/>lesson + 🔴 book sections<br/>30–40 min"]
     B --> C["3 · Blurt<br/>book closed, write<br/>everything — 5 min"]
     C --> D["4 · Check & fix<br/>compare, mark gaps<br/>5 min"]
     D --> E["5 · Explain<br/>60-second talk<br/>out loud"]
@@ -14,7 +14,7 @@ flowchart TB
 ```
 
 ### 1 · Preview (2 min)
-Read only the **TL;DR** and **crux**. You now know the question before you read the answer, so your brain files new details under it.
+Read only the **In plain words** box, the **TL;DR** and **The big question**. You now know the question before you read the answer, so your brain files new details under it.
 
 ### 2 · Read
 Read the lesson, then the book sections marked 🔴 in "Read in the book". Don't highlight. Instead, after every section, look away and say one sentence about what it did.

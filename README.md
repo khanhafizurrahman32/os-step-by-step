@@ -19,6 +19,7 @@ OSTEP is ~650 pages. Most exam and interview questions come from about a third o
 
 | Step | Page | Time |
 |---|---|---|
+| 0 | [Background you need](docs/start/background.md) — CPU, memory, stack, heap, argc/argv, system calls (skip if familiar) | 10 min |
 | 1 | [The 80/20 map](docs/start/80-20-map.md) | 5 min |
 | 2 | [The recall system](docs/start/recall-system.md) | 5 min |
 | 3 | [3-week plan](docs/start/study-plan.md) | — |
@@ -72,7 +73,7 @@ OSTEP is ~650 pages. Most exam and interview questions come from about a third o
 
 On the website, every key term has a dotted underline — hover over it (tap on a phone) to see its definition.
 
-`TL;DR` → `The crux` → `The story chain` → `Core ideas + diagram` → `Worked example` → `Traps` → `Recall (blurt · flashcards · explain it · simulator)` → `Connects to` → `Read in the book`
+`In plain words` (an everyday analogy) → `TL;DR` → `The big question` → `The story chain` → `Core ideas + diagram` → `Worked example` → `Common mistakes` → `Recall (blurt · flashcards · explain it · simulator)` → `Connects to` → `Read in the book`
 
 ## Flashcards
 

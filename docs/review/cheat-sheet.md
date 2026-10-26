@@ -3,6 +3,8 @@
 !!! tip "Use it as a test first"
     Before reading, take a blank page and try to write this sheet from memory. Then compare.
 
+    This page is deliberately compressed — it's for **revision after** the lessons, not for first learning. If a line doesn't make sense, follow it back to its lesson, or hover over the underlined words for a quick definition.
+
 ## Virtualization — CPU
 
 - **Process** = address space + registers (PC, SP) + open files. States: **Running ⇄ Ready**, Running → **Blocked** → Ready.
